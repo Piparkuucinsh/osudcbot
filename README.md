@@ -10,3 +10,4 @@ Aleksandrs Vjaters - programmētājs
 JavaScript, NodeJS, discord.js, PostgreSQL, WebSockets
 
 # Darba plāns
+![image](https://github.com/Piparkuucinsh/osudcbot/assets/30084851/d85ec451-060b-498c-afd5-1968c7ebb645)
