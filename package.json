@@ -2,16 +2,23 @@
   "name": "osudcbot",
   "version": "1.0.0",
   "description": "A discord bot that links player's osu accounts to their discord accounts using discord rich presence and automatically assigns discord roles based on osu! country rank. It also automatically posts new user top scores and high leaderboard topscores every hour. It also has extra features such as minigames to award daily play and incentivize activity both in game and in the discord server.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev src/index.ts"
   },
   "author": "Piparkuucinsh",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^20.8.10",
+    "prisma": "^5.5.2",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "discord.js": "^14.13.0"
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1"
   }
 }
