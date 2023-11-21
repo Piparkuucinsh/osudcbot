@@ -1,7 +1,7 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import path from "path";
 import "dotenv/config";
-import { readdirSync } from "fs";
+import { readdirSync } from "fs"
 
 const client = new Client({
   intents: [
