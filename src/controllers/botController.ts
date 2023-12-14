@@ -3,35 +3,26 @@ import path from "path";
 import "dotenv/config";
 import { readdirSync } from "fs";
 import dotenv from 'dotenv';
-import DiscordController from "./discordController";
-import OsuController from "./osuController";
+import { discordClient } from "./discordController";
+import { osuClient } from "./osuController";
 
 dotenv.config();
 
-export default class botController {
-    private static instance: botController;
-    private discordClient: DiscordController;
-    private osuClient: OsuController;
+const ROOT_PATH = path.join(__dirname, '..');
 
-    private constructor() {
-        this.discordClient = DiscordController.getInstance();
-        this.osuClient = OsuController.getInstance();
-    }
+class BotController {
 
-    public static getInstance(): botController {
-        if (!botController.instance) {
-            botController.instance = new botController();
-        }
-
-        return botController.instance;
+    public constructor() {
     }
 
     public setup(): void {
         try {
-            this.discordClient.setEvents();
-            this.discordClient.login();
+            discordClient.setEvents();
+            discordClient.login();
         } catch (error) {
             console.error("Failed to set up bot:", error);
         }
     }
 }
+
+export let bot = new BotController();

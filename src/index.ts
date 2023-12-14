@@ -3,7 +3,6 @@ import path from "path";
 import "dotenv/config";
 import { readdirSync } from "fs";
 
-import botController from "./controllers/botController";
+import { bot } from "./controllers/botController";
 
-var bot: botController = botController.getInstance();
 bot.setup();

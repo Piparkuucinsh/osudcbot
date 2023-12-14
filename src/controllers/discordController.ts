@@ -8,11 +8,10 @@ dotenv.config();
 
 const ROOT_PATH = path.join(__dirname, '..');
 
-export default class DiscordController {
-    private static instance: DiscordController;
+class DiscordController {
     private discordClient: Client;
 
-    private constructor() {
+    public constructor() {
         this.discordClient = new Client({
             intents: [
                 GatewayIntentBits.Guilds,
@@ -20,14 +19,6 @@ export default class DiscordController {
                 GatewayIntentBits.GuildPresences,
             ],
         });
-    }
-
-    public static getInstance(): DiscordController {
-        if (!DiscordController.instance) {
-            DiscordController.instance = new DiscordController();
-        }
-
-        return DiscordController.instance;
     }
 
     public login(): void {
@@ -44,7 +35,7 @@ export default class DiscordController {
             const eventsFiles = readdirSync(eventsPath).filter((file) =>
                 file.endsWith(".ts")
             );
-            
+
             for (const file of eventsFiles) {
                 const filePath = path.join(eventsPath, file);
                 const event = require(filePath);
@@ -59,3 +50,5 @@ export default class DiscordController {
         }
     }
 }
+
+export let discordClient = new DiscordController();

@@ -1,21 +1,14 @@
 import { auth } from "osu-api-extended";
 import dotenv from 'dotenv';
+import path from "path";
 
 dotenv.config();
 
-export default class OsuController {
-    private static instance: OsuController;
+const ROOT_PATH = path.join(__dirname, '..');
 
-    private constructor() {
+class OsuController {
+    public constructor() {
         // Initialize the singleton instance
-    }
-
-    public static getInstance(): OsuController {
-        if (!OsuController.instance) {
-            OsuController.instance = new OsuController();
-        }
-
-        return OsuController.instance;
     }
 
     public login(): void {
@@ -32,3 +25,5 @@ export default class OsuController {
         }
     }
 }
+
+export let osuClient = new OsuController();
