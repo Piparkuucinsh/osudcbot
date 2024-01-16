@@ -4,7 +4,7 @@ import { config } from "../config";
 module.exports = {
 	name: Events.PresenceUpdate,
 	once: false,
-	execute(presence: Presence) {
+	execute: async (presence: Presence) => {
 		console.log(presence);
 		if (!presence.guild) {
 			return
