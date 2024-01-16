@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   discord.js:
-    specifier: ^14.13.0
+    specifier: ^14.14.1
     version: 14.14.1
   dotenv:
     specifier: ^16.3.1
@@ -17,19 +17,19 @@ dependencies:
 
 devDependencies:
   '@types/node':
-    specifier: ^20.8.10
+    specifier: ^20.11.3
     version: 20.11.3
   prisma:
-    specifier: ^5.5.2
+    specifier: ^5.8.1
     version: 5.8.1
   ts-node:
-    specifier: ^10.9.1
+    specifier: ^10.9.2
     version: 10.9.2(@types/node@20.11.3)(typescript@5.3.3)
   ts-node-dev:
     specifier: ^2.0.0
     version: 2.0.0(@types/node@20.11.3)(typescript@5.3.3)
   typescript:
-    specifier: ^5.2.2
+    specifier: ^5.3.3
     version: 5.3.3
 
 packages:
