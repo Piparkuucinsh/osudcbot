@@ -10,12 +10,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id Int @id
-  discord_id BigInt @unique
-  osu_id BigInt @unique
-  last_checked DateTime
-  created_at DateTime @default(now())
-  current_role Int
+model OsuUser {
+  id                 Int        @id
+  username           String
+  registration_date  DateTime
+  last_activity_date DateTime
+  restricted         Boolean
+  scores             OsuScore[]
+  User               User?
 }
 
+model DiscordUser {
+  id                 BigInt   @id
+  username           String
+  registration_date  DateTime
+  last_activity_date DateTime
+  deleted            Boolean
+  User               User?
+}
+
+model User {
+  id              Int          @id @default(autoincrement())
+  osu_user_id     Int          @unique
+  discord_user_id BigInt       @unique
+  osu_user        OsuUser?     @relation(fields: [osu_user_id], references: [id])
+  discord_user    DiscordUser? @relation(fields: [discord_user_id], references: [id])
+}
+
+model OsuScore {
+  id         BigInt   @id @default(autoincrement())
+  user_id    Int
+  beatmap_id Int
+  ruleset_id Int
+  data       Json
+  created_at DateTime
+  updated_at DateTime
+  deleted_at DateTime
+  User       OsuUser  @relation(fields: [user_id], references: [id])
+}

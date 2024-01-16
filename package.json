@@ -18,6 +18,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@prisma/client": "5.8.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "osu-api-extended": "^2.7.67"

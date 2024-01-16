@@ -1,8 +1,8 @@
-import { Client, Events, GatewayIntentBits } from "discord.js";
-import path from "path";
 import "dotenv/config";
-import { readdirSync } from "fs"
+import { init_dc_client } from "init/init_dc_client";
+import { osu_login } from "init/init_osu_client";
 
-import { bot } from "./controllers/botController";
 
-bot.setup();
+osu_login()
+export const client = init_dc_client()
+
