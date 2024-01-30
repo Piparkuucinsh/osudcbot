@@ -29,7 +29,7 @@ export const init_dc_client = async () => {
       ReadyEventModule,
     ];
 
-    for (const event of events) {
+    for (const event of events as EventModule<keyof ClientEvents>[]) {
       if (event.once) {
         discordClient.once(
           event.name,
