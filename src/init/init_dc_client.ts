@@ -1,43 +1,48 @@
-import { Client, Events, GatewayIntentBits } from "discord.js";
+import { Client, ClientEvents, GatewayIntentBits } from "discord.js";
+import { EventModule } from "types";
 import path from "path";
-import { readdirSync } from "fs";
 
-import dotenv from 'dotenv';
+import presenceUpdateEvent from "../events/presenceUpdate";
+import ReadyEventModule from "../events/ready";
 
-dotenv.config();
+const ROOT_PATH = path.join(process.cwd(), "dist");
+console.log(ROOT_PATH);
 
-const ROOT_PATH = path.join(__dirname, '..');
+export const init_dc_client = async () => {
+  const discordClient = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildPresences,
+    ],
+  });
 
-export const init_dc_client = () => {
+  await discordClient.login(process.env.BOT_TOKEN);
 
-    const discordClient = new Client({
-        intents: [
-            GatewayIntentBits.Guilds,
-            GatewayIntentBits.GuildMembers,
-            GatewayIntentBits.GuildPresences,
-        ],
-    });
+  try {
+    type AnyEventModule = {
+      [K in keyof ClientEvents]: EventModule<K>;
+    }[keyof ClientEvents];
 
-    discordClient.login(process.env.BOT_TOKEN);
+    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule];
 
-    try {
-        const eventsPath = path.join(ROOT_PATH, 'events');
-        const eventsFiles = readdirSync(eventsPath).filter((file) =>
-            file.endsWith(".ts")
+    for (const event of events as EventModule<keyof ClientEvents>[]) {
+      if (event.once) {
+        discordClient.once(
+          event.name,
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
         );
-
-        for (const file of eventsFiles) {
-            const filePath = path.join(eventsPath, file);
-            const event = require(filePath);
-            if (event.once) {
-                discordClient.once(event.name, (...args) => event.execute(...args));
-            } else {
-                discordClient.on(event.name, (...args) => event.execute(...args));
-            }
-        }
-    } catch (error) {
-        console.error("Failed to set up Discord client events:", error);
+      } else {
+        discordClient.on(
+          event.name,
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
+        );
+      }
     }
+  } catch (error) {
+    console.error("Failed to set up Discord client events:");
+    throw error;
+  }
 
-    return discordClient;
-}
+  return discordClient;
+};

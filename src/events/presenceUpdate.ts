@@ -1,18 +1,23 @@
 import { Events, Presence } from "discord.js";
 import { config } from "../config";
+import { EventModule } from "types";
 
-module.exports = {
-	name: Events.PresenceUpdate,
-	once: false,
-	execute: async (presence: Presence) => {
-		console.log(presence);
-		if (!presence.guild) {
-			return
-		}
-		if (presence.guild.id != config.server_id) {
-			return
-		}
-
-		console.log(presence.guild.id)
-	},
+const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
+  name: Events.PresenceUpdate,
+  once: false,
+  execute: (_oldPresence: Presence | null, newPresence: Presence) => {
+    try {
+      console.log(newPresence);
+      if (!newPresence.guild) {
+        return;
+      }
+      if (newPresence.guild.id != config.server_id) {
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  },
 };
+
+export default presenceUpdateEvent;
