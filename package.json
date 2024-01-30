@@ -15,15 +15,15 @@
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "eslint": "^8.56.0",
-    "prisma": "^5.8.1",
+    "prisma": "^5.9.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@prisma/client": "5.8.1",
+    "@prisma/client": "5.9.0",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.1",
-    "osu-api-extended": "^2.7.67"
+    "osu-api-extended": "^2.7.69"
   }
 }
