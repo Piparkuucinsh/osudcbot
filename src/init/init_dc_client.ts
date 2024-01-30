@@ -20,9 +20,13 @@ export const init_dc_client = async () => {
   await discordClient.login(process.env.BOT_TOKEN);
 
   try {
-    const events: EventModule<keyof ClientEvents>[] = [
-        presenceUpdateEvent as EventModule<keyof ClientEvents>,
-        ReadyEventModule as EventModule<keyof ClientEvents>,
+    type AnyEventModule = {
+        [K in keyof ClientEvents]: EventModule<K>;
+      }[keyof ClientEvents];
+
+    const events: AnyEventModule[] = [
+      presenceUpdateEvent,
+      ReadyEventModule,
     ];
 
     for (const event of events) {
