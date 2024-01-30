@@ -5,7 +5,6 @@ export type Config = {
   bot_channel_id: string;
 };
 
-
 const configFileContent = readFileSync("config.json", "utf8");
 
 let parsedConfig: Partial<Config>;

@@ -21,24 +21,21 @@ export const init_dc_client = async () => {
 
   try {
     type AnyEventModule = {
-        [K in keyof ClientEvents]: EventModule<K>;
-      }[keyof ClientEvents];
+      [K in keyof ClientEvents]: EventModule<K>;
+    }[keyof ClientEvents];
 
-    const events: AnyEventModule[] = [
-      presenceUpdateEvent,
-      ReadyEventModule,
-    ];
+    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule];
 
     for (const event of events as EventModule<keyof ClientEvents>[]) {
       if (event.once) {
         discordClient.once(
           event.name,
-          (...args: ClientEvents[typeof event.name]) => event.execute(...args)
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
         );
       } else {
         discordClient.on(
           event.name,
-          (...args: ClientEvents[typeof event.name]) => event.execute(...args)
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
         );
       }
     }

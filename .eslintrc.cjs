@@ -1,5 +1,8 @@
 module.exports = {
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended-type-checked"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+  ],
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint"],
   parserOptions: {
@@ -7,5 +10,5 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   root: true,
-  ignorePatterns: ["dist", ".eslintrc.cjs"]
+  ignorePatterns: ["dist", ".eslintrc.cjs"],
 };
