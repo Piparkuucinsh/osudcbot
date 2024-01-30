@@ -5,19 +5,20 @@ export type Config = {
   bot_channel_id: string;
 };
 
+
 const configFileContent = readFileSync("config.json", "utf8");
 
-let parsedConfig: any;
+let parsedConfig: Partial<Config>;
 
 try {
-  parsedConfig = JSON.parse(configFileContent);
+  parsedConfig = JSON.parse(configFileContent) as Partial<Config>;
 } catch {
   throw new Error("Error parsing config file.");
 }
 
 export const config: Config = validateConfig(parsedConfig);
 
-function validateConfig(config: any): Config {
+function validateConfig(config: Partial<Config>): Config {
   if (!config.server_id) {
     throw new Error("Missing server_id in the config file");
   }

@@ -1,9 +1,12 @@
 import { Client, Events } from "discord.js";
+import { EventModule } from "types";
 
-module.exports = {
+const ReadyEventModule: EventModule<Events.ClientReady> = {
   name: Events.ClientReady,
   once: false,
-  execute: async (c: Client<true>) => {
+  execute: (c: Client<true>) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
   },
 };
+
+export default ReadyEventModule;

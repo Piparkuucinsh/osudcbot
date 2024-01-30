@@ -13,11 +13,12 @@ datasource db {
 model OsuUser {
   id                 Int        @id
   username           String
-  registration_date  DateTime
-  last_activity_date DateTime
-  restricted         Boolean
+  registration_date  DateTime   @default(now())
+  last_activity_date DateTime   @default(now())
+  restricted         Boolean    @default(false)
   scores             OsuScore[]
   User               User?
+  enabled            Boolean    @default(true)
 }
 
 model DiscordUser {
@@ -31,7 +32,7 @@ model DiscordUser {
 
 model User {
   id              Int          @id @default(autoincrement())
-  osu_user_id     Int          @unique
+  osu_user_id     Int?         @unique
   discord_user_id BigInt       @unique
   osu_user        OsuUser?     @relation(fields: [osu_user_id], references: [id])
   discord_user    DiscordUser? @relation(fields: [discord_user_id], references: [id])
