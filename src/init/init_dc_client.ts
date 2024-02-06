@@ -9,7 +9,7 @@ import { CommandModule, EventModule } from "types";
 
 import presenceUpdateEvent from "../events/presenceUpdate";
 import ReadyEventModule from "../events/ready";
-import desa from "../commands/desa";
+import getCommandList from "utils/getCommandList";
 
 class ExClient extends Client {
   commands = new Collection<string, CommandModule>();
@@ -37,12 +37,12 @@ export const init_dc_client = async () => {
       if (event.once) {
         discordClient.once(
           event.name,
-          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args)
         );
       } else {
         discordClient.on(
           event.name,
-          (...args: ClientEvents[typeof event.name]) => event.execute(...args),
+          (...args: ClientEvents[typeof event.name]) => event.execute(...args)
         );
       }
     }
@@ -51,7 +51,7 @@ export const init_dc_client = async () => {
     throw error;
   }
 
-  const commands: CommandModule[] = [desa];
+  const commands = getCommandList()
 
   for (const command of commands) {
     discordClient.commands.set(command.data.name, command);
@@ -64,7 +64,7 @@ export const init_dc_client = async () => {
 
     if (!command) {
       console.error(
-        `No command matching ${interaction.commandName} was found.`,
+        `No command matching ${interaction.commandName} was found.`
       );
       return;
     }

@@ -1,7 +1,7 @@
 import { config } from "./config";
-import desa from "./commands/desa";
 import { REST, Routes } from "discord.js";
 import "dotenv/config";
+import getCommandList from "utils/getCommandList";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -18,7 +18,7 @@ if (!SERVER_ID) {
   throw Error("no server_id in env");
 }
 
-const commands = [desa];
+const commands = getCommandList()
 const commandsJson = commands.map((command) => command.data.toJSON());
 
 // Construct and prepare an instance of the REST module
