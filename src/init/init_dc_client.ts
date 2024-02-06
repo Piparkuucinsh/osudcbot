@@ -1,15 +1,22 @@
-import { Client, ClientEvents, GatewayIntentBits } from "discord.js";
-import { EventModule } from "types";
-import path from "path";
+import {
+  Client,
+  ClientEvents,
+  Collection,
+  Events,
+  GatewayIntentBits,
+} from "discord.js";
+import { CommandModule, EventModule } from "types";
 
 import presenceUpdateEvent from "../events/presenceUpdate";
 import ReadyEventModule from "../events/ready";
+import desa from "../commands/desa";
 
-const ROOT_PATH = path.join(process.cwd(), "dist");
-console.log(ROOT_PATH);
+class ExClient extends Client {
+  commands = new Collection<string, CommandModule>();
+}
 
 export const init_dc_client = async () => {
-  const discordClient = new Client({
+  const discordClient = new ExClient({
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
@@ -43,6 +50,42 @@ export const init_dc_client = async () => {
     console.error("Failed to set up Discord client events:");
     throw error;
   }
+
+  const commands: CommandModule[] = [desa];
+
+  for (const command of commands) {
+    discordClient.commands.set(command.data.name, command);
+  }
+
+  discordClient.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = discordClient.commands.get(interaction.commandName);
+
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`,
+      );
+      return;
+    }
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      }
+    }
+  });
 
   return discordClient;
 };
