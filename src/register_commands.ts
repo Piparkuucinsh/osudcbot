@@ -18,7 +18,7 @@ if (!SERVER_ID) {
   throw Error("no server_id in env");
 }
 
-const commands = getCommandList()
+const commands = getCommandList();
 const commandsJson = commands.map((command) => command.data.toJSON());
 
 // Construct and prepare an instance of the REST module
