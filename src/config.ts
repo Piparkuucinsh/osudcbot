@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 export type Config = {
   server_id: string;
   bot_channel_id: string;
+  desa?: string;
 };
 
 const configFileContent = readFileSync("config.json", "utf8");
