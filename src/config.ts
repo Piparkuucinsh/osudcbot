@@ -6,7 +6,7 @@ export type Config = {
   desa?: string;
 };
 
-const configFileContent = readFileSync("../config.json", "utf8");
+const configFileContent = readFileSync("config.json", "utf8");
 
 let parsedConfig: Partial<Config>;
 

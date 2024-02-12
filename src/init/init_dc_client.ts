@@ -11,6 +11,8 @@ import presenceUpdateEvent from "../events/presenceUpdate";
 import ReadyEventModule from "../events/ready";
 import getCommandList from "../utils/getCommandList";
 
+import 'dotenv/config'
+
 class ExClient extends Client {
   commands = new Collection<string, CommandModule>();
 }
