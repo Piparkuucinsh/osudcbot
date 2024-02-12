@@ -7,7 +7,7 @@ const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
   once: false,
   execute: (_oldPresence: Presence | null, newPresence: Presence) => {
     try {
-      console.log(newPresence);
+      // console.log(newPresence);
       if (!newPresence.guild) {
         return;
       }
