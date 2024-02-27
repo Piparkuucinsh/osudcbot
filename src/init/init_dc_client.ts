@@ -9,6 +9,8 @@ import { CommandModule, EventModule } from "types";
 
 import presenceUpdateEvent from "../events/presenceUpdate";
 import ReadyEventModule from "../events/ready";
+import onMemberJoinEvent from "../events/onMemberJoin";
+import onMemberLeaveEvent from "../events/onMemberLeave";
 import getCommandList from "../utils/getCommandList";
 
 import 'dotenv/config'
@@ -33,7 +35,7 @@ export const init_dc_client = async () => {
       [K in keyof ClientEvents]: EventModule<K>;
     }[keyof ClientEvents];
 
-    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule];
+    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule, onMemberJoinEvent, onMemberLeaveEvent];
 
     for (const event of events as EventModule<keyof ClientEvents>[]) {
       if (event.once) {
