@@ -1,4 +1,4 @@
-import { config } from "config";
+import { config } from "../config";
 import { CommandModule } from "types";
 
 import desa from "../commands/desa";
