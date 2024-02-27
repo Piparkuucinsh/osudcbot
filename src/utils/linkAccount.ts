@@ -1,6 +1,6 @@
-import { v2 } from "../../node_modules/osu-api-extended/dist/index";
-import { prisma } from "../lib/prisma";
-import { sendBotMessage } from "./sendBotMessage";
+import { v2 } from "osu-api-extended";
+import { prisma } from "@/lib/prisma";
+import { sendBotMessage } from "@/utils/sendBotMessage";
 import { Presence } from "discord.js";
 
 const OSU_APP_ID = "367827983903490050";

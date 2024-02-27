@@ -5,11 +5,11 @@ import {
   Events,
   GatewayIntentBits,
 } from "discord.js";
-import { CommandModule, EventModule } from "types";
+import { CommandModule, EventModule } from "@/types";
 
-import presenceUpdateEvent from "../events/presenceUpdate";
-import ReadyEventModule from "../events/ready";
-import getCommandList from "../utils/getCommandList";
+import presenceUpdateEvent from "@/events/presenceUpdate";
+import ReadyEventModule from "@/events/ready";
+import getCommandList from "@/utils/getCommandList";
 
 import 'dotenv/config'
 

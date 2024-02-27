@@ -1,6 +1,6 @@
 import { Client, Events } from "discord.js";
-import { refreshRoles } from "func/refreshRoles";
-import { EventModule } from "types";
+import { refreshRoles } from "@/func/refreshRoles";
+import { EventModule } from "@/types";
 
 const ReadyEventModule: EventModule<Events.ClientReady> = {
   name: Events.ClientReady,
