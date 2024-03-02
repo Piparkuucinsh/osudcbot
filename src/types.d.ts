@@ -14,3 +14,8 @@ export type CommandModule = {
   data: SlashCommandBuilder;
   execute: (interaction: CommandInteraction) => Promise<void>;
 };
+
+export interface RoleThreshold {
+  threshold: number;
+  roleId: string;
+}

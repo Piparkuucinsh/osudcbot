@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import getRoleWithRank from "@/utils/roles";
 import { v2 } from "osu-api-extended";
 
 export const refreshRoles = async () => {
@@ -22,7 +23,14 @@ export const refreshRoles = async () => {
 
   for (const user of users) {
     if (user.osu_user_id) {
-      
+      let position = id_list.indexOf(user.osu_user_id)
+      if (position === -1) {
+        position = (await v2.user.details(user.osu_user_id, "osu")).statistics.country_rank
+      }
+
+      const roleId =  getRoleWithRank(position)
+
+
     }
   }
 

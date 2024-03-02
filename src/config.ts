@@ -1,9 +1,11 @@
 import { readFileSync } from "fs";
+import { RoleThreshold } from "@/types";
 
 export type Config = {
   server_id: string;
   bot_channel_id: string;
   desa?: string;
+  roles: RoleThreshold[]
 };
 
 const configFileContent = readFileSync("config.json", "utf8");
@@ -24,6 +26,9 @@ function validateConfig(config: Partial<Config>): Config {
   }
   if (!config.bot_channel_id) {
     throw new Error("Missing bot_channel_id in the config file");
+  }
+  if (!config.roles) {
+    throw new Error("Missing roles in the config file");
   }
   return config as Config;
 }
