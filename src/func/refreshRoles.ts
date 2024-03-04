@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import getRoleWithRank from "@/utils/roles";
+import { getCurrentRoleId, getRoleWithRank } from "@/utils/roles";
 import { v2 } from "osu-api-extended";
 
 export const refreshRoles = async () => {
@@ -13,31 +13,55 @@ export const refreshRoles = async () => {
   }
 
   const id_list = combinedList.map((x) => x.user.id);
-  const users = await prisma.user.findMany({where: {
-    in_server: true,
-    osu_user: {
-      enabled: true
+  const users = await prisma.user.findMany({
+    where: {
+      in_server: true,
+      osu_user: {
+        enabled: true,
+      },
+      osu_user_id: { not: null },
     },
-    osu_user_id: {not: null}
-  }})
+  });
 
   for (const user of users) {
     if (user.osu_user_id) {
-      let position = id_list.indexOf(user.osu_user_id)
+      let position = id_list.indexOf(user.osu_user_id);
+
+      const currentRoleId = await getCurrentRoleId(
+        String(user.discord_user_id)
+      );
+
       if (position === -1) {
-        position = (await v2.user.details(user.osu_user_id, "osu")).statistics.country_rank
+        try {
+          const osuUserFromApi = await v2.user.details(user.osu_user_id, "osu");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (osuUserFromApi && (osuUserFromApi as any).error == null) {
+            const peppy = await v2.user.details(2, "osu");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((peppy as any).error == null) {continue}
+
+            //set restricted role
+            continue
+          }
+
+          if (osuUserFromApi.statistics.is_ranked === false) {
+            //set inactive role
+            continue
+          }
+
+
+          position = osuUserFromApi.statistics.country_rank;
+        } catch {
+          console.error(`Error fetching user ${user.osu_user_id} from osu api`);
+        }
       }
 
-      const roleId =  getRoleWithRank(position)
+
+      const newRoleId = getRoleWithRank(position);
 
 
+      //set new role
     }
   }
-
-  // const positions = users.map(user => id_list.indexOf(user.osu_user_id)
-
-
-
-
   console.log(combinedList.length);
 };

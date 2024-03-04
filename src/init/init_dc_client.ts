@@ -8,7 +8,7 @@ import {
 import { CommandModule, EventModule } from "@/types";
 
 import presenceUpdateEvent from "@/events/presenceUpdate";
-import ReadyEventModule from "@/events/ready";
+import ReadyEventModule from "@/events/onReady";
 import getCommandList from "@/init/getCommandList";
 
 import 'dotenv/config'
