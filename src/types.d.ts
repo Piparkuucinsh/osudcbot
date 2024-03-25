@@ -11,6 +11,6 @@ export type EventModule<K extends keyof ClientEvents> = {
 };
 
 export type CommandModule = {
-    data: SlashCommandBuilder;
+    data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
     execute: (interaction: CommandInteraction) => Promise<void>;
 };

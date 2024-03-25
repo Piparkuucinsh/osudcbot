@@ -17,6 +17,7 @@ model OsuUser {
   last_activity_date DateTime   @default(now())
   restricted         Boolean    @default(false)
   scores             OsuScore[]
+  pp_score           Float?
   User               User?
   enabled            Boolean    @default(true) //is from latvia
   last_checked       DateTime   @default(now())

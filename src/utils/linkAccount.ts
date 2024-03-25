@@ -62,6 +62,7 @@ export const linkAccounts = async (presence: Presence) => {
                 create: {
                     id: osuUserFromAPI.id,
                     username: osuUserFromAPI.username,
+                    pp_score: osuUserFromAPI.statistics.pp,
                     enabled: isFromLatvia,
                 },
             });

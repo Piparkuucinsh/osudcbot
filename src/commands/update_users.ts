@@ -1,7 +1,20 @@
 import { config } from "../config";
-import { SlashCommandBuilder } from "discord.js";
+import { Role, SlashCommandBuilder } from "discord.js";
 import { CommandModule } from "types";
 import { prisma } from "../lib/prisma";
+import { v2 } from "../../node_modules/osu-api-extended/dist/index";
+import fs from "fs";
+
+interface RoleConfig {
+    name: string;
+    color: string;
+    lower_bound?: number;
+    upper_bound?: number;
+    hoist?: boolean;
+}
+
+// Read role information from JSON file
+const roles: RoleConfig[] = JSON.parse(fs.readFileSync("roles.json", "utf-8"));
 
 const updateUsers: CommandModule = {
     data: new SlashCommandBuilder()
@@ -24,6 +37,11 @@ const updateUsers: CommandModule = {
 
         let usersAdded = [];
         for (const member of members.values()) {
+            if (member.user.bot) {
+                member.roles.add(guild.roles.cache.find(r => r.name === "Bot")!);
+                continue;
+            }
+            console.log(`Processing ${member.displayName}`);
             // Use Prisma to check if the member is in the database
             const discordUser = await prisma.discordUser.findUnique({
                 where: {
@@ -45,6 +63,56 @@ const updateUsers: CommandModule = {
                     }
                 });
                 usersAdded.push(member.displayName);
+            }
+            const botUser = await prisma.user.findUnique({
+                where: {
+                    discord_user_id: BigInt(member.id)
+                }
+            });
+            console.log(`Bot user:`);
+            console.log(botUser);
+            if (botUser) {
+                // Get the osu user from the database
+                const osu_user_id = botUser!.osu_user_id!;
+                const osuUserFromDB = await prisma.osuUser.findUnique({
+                    where: {
+                        id: osu_user_id
+                    }
+                });
+                const username = osuUserFromDB!.username;
+                const osuUserFromAPI = await v2.user.details(username, "osu");
+                if (!osuUserFromAPI) {
+                    console.log("No osu user found");
+                    continue;
+                }
+                console.log("Got osu user from API");
+                // const user_pp_score = osuUserFromAPI.statistics.pp;
+                const user_pp_score = 1000.55;
+                let roleToAdd = null;
+                let rolesToRemove = member.roles.cache.filter(r => roles.some(role => role.name === r.name));
+
+                for (const role of roles) {
+                    if (!role.lower_bound && !role.upper_bound) {
+                        console.log(`Role ${role.name} is missing bounds(${role.lower_bound} - ${role.upper_bound}), skipping.`);
+                        continue;
+                    }
+                    console.log(`Checking role: ${role.name}`);
+                    console.log(`Role bounds: ${role.lower_bound} - ${role.upper_bound}`);
+                    console.log(`User pp score: ${user_pp_score}`);
+                    if (user_pp_score >= role.lower_bound! && user_pp_score < role.upper_bound!) {
+                        roleToAdd = guild.roles.cache.find(r => r.name === role.name);
+                        rolesToRemove = rolesToRemove.filter(r => r.name !== role.name);
+                    }
+                }
+                console.log(`Roles to add: ${roleToAdd ? roleToAdd.name : "None"}`);
+                console.log(`Roles to remove: ${rolesToRemove.map(r => r.name).join(', ')}`);
+                // Use or operrator to check if roleToAdd is not null or roleToRemove is not empty
+                if (roleToAdd || rolesToRemove.size > 0) {
+                    await member.roles.remove(rolesToRemove);
+                    await member.roles.add(roleToAdd!);
+                }
+
+
             }
         }
 
