@@ -1,6 +1,6 @@
 import { Events, Presence } from "discord.js";
-import { config } from "../config";
-import { EventModule } from "types";
+import { config } from "@/config";
+import { EventModule } from "@/types";
 
 const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
   name: Events.PresenceUpdate,

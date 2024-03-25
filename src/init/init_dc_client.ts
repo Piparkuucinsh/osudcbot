@@ -5,11 +5,11 @@ import {
   Events,
   GatewayIntentBits,
 } from "discord.js";
-import { CommandModule, EventModule } from "types";
+import { CommandModule, EventModule } from "@/types";
 
-import presenceUpdateEvent from "../events/presenceUpdate";
-import ReadyEventModule from "../events/ready";
-import getCommandList from "../utils/getCommandList";
+import presenceUpdateEvent from "@/events/presenceUpdate";
+import ReadyEventModule from "@/events/onReady";
+import getCommandList from "@/init/getCommandList";
 
 import 'dotenv/config'
 
@@ -28,6 +28,7 @@ export const init_dc_client = async () => {
 
   await discordClient.login(process.env.BOT_TOKEN);
 
+  // add event listeners
   try {
     type AnyEventModule = {
       [K in keyof ClientEvents]: EventModule<K>;
@@ -53,6 +54,8 @@ export const init_dc_client = async () => {
     throw error;
   }
 
+
+  //register slash commands
   const commands = getCommandList();
 
   for (const command of commands) {

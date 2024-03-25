@@ -1,7 +1,7 @@
-import { config } from "../config";
-import { CommandModule } from "types";
+import { config } from "@/config";
+import { CommandModule } from "@/types";
 
-import desa from "../commands/desa";
+import desa from "@/commands/desa";
 
 const getCommandList = () => {
   let commands: CommandModule[] = [];
