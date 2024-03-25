@@ -2,15 +2,20 @@ import {
     ClientEvents,
     CommandInteraction,
     SlashCommandBuilder,
-} from "discord.js";
+} from 'discord.js'
 
 export type EventModule<K extends keyof ClientEvents> = {
-    name: K;
-    once: boolean;
-    execute: (...args: ClientEvents[K]) => void;
-};
+    name: K
+    once: boolean
+    execute: (...args: ClientEvents[K]) => void
+}
 
 export type CommandModule = {
-    data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
-    execute: (interaction: CommandInteraction) => Promise<void>;
-};
+    data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
+    execute: (interaction: CommandInteraction) => Promise<void>
+}
+
+export interface RoleThreshold {
+    threshold: number
+    roleId: string
+}
