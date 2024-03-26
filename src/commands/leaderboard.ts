@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, CommandInteraction, User } from "discord.js";
-import { CommandModule } from "types";
+import { CommandModule } from "@/types";
 import { prisma } from "../lib/prisma";
 
 interface UserGameStatistics {

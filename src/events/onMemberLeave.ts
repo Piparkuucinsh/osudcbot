@@ -1,22 +1,22 @@
-import { Events, GuildMember, PartialGuildMember } from "discord.js";
-import { config } from "../config";
-import { EventModule } from "types";
+import { Events, GuildMember, PartialGuildMember } from 'discord.js'
+import { EventModule } from '@/types'
+import { prisma } from '@/lib/prisma'
 
 const onMemberLeaveEvent: EventModule<Events.GuildMemberRemove> = {
     name: Events.GuildMemberRemove,
     once: false,
-    execute: (member: GuildMember | PartialGuildMember) => {
+    execute: async (member: GuildMember | PartialGuildMember) => {
         try {
-            // console.log(newPresence);
-
-            console.log(`A member left: ${member.user.tag}`);
-            console.log(`Member ID: ${member.id}`);
-            console.log(`Left Guild: ${member.guild.name}`);
-
+            // member.displayName left the server
+            // maybe banned?
+            await prisma.user.update({
+                where: { discord_user_id: BigInt(member.id) },
+                data: { in_server: false },
+            })
         } catch (err) {
-            console.error(err);
+            console.error(err)
         }
     },
-};
+}
 
-export default onMemberLeaveEvent;
+export default onMemberLeaveEvent

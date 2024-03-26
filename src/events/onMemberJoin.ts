@@ -1,21 +1,34 @@
-import { Events, GuildMember, PartialGuildMember } from "discord.js";
-import { config } from "../config";
-import { EventModule } from "types";
+import { Events, GuildMember } from 'discord.js'
+import { EventModule } from '@/types'
+import { prisma } from '@/lib/prisma'
 
 const onMemberJoinEvent: EventModule<Events.GuildMemberAdd> = {
     name: Events.GuildMemberAdd,
     once: false,
-    execute: (member: GuildMember | PartialGuildMember) => {
+    execute: async (member: GuildMember) => {
         try {
-            // console.log(newPresence);
-            console.log(`New member joined: ${member.user.tag}`);
-            console.log(`Member ID: ${member.id}`);
-            console.log(`Joined Guild: ${member.guild.name}`);
-
+            const user = await prisma.user.findFirst({
+                where: { discord_user_id: BigInt(member.id) },
+            })
+            if (user) {
+                //send welcome message welcoming back
+                await prisma.user.update({
+                    where: { discord_user_id: BigInt(member.id) },
+                    data: { in_server: true },
+                })
+            } else {
+                //send welcome message
+                await prisma.user.create({
+                    data: {
+                        discord_user_id: BigInt(member.id),
+                        in_server: true,
+                    },
+                })
+            }
         } catch (err) {
-            console.error(err);
+            console.error(err)
         }
     },
-};
+}
 
-export default onMemberJoinEvent;
+export default onMemberJoinEvent

@@ -1,7 +1,7 @@
-import { Events, Presence } from "discord.js";
-import { config } from "../config";
-import { EventModule } from "types";
-import { linkAccounts } from "../utils/linkAccount";
+import { Events, Presence } from 'discord.js'
+import { config } from '@/config'
+import { EventModule } from '@/types'
+import { linkAccounts } from '@/utils/linkAccount'
 
 const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
     name: Events.PresenceUpdate,
@@ -10,20 +10,19 @@ const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
         try {
             // console.log(newPresence);
             if (!newPresence.guild) {
-                return;
+                return
             }
-            console.log(`Presence update guild id: ${newPresence.guild.id}`);
-            console.log(`Config server id: ${config.bot_guild_id}`);
+            console.log(`Presence update guild id: ${newPresence.guild.id}`)
+            console.log(`Config server id: ${config.bot_guild_id}`)
             if (newPresence.guild.id != config.bot_guild_id) {
-                return;
+                return
             }
-            console.log("Linking accounts...")
-            linkAccounts(newPresence);
-
+            console.log('Linking accounts...')
+            linkAccounts(newPresence)
         } catch (err) {
-            console.error(err);
+            console.error(err)
         }
     },
-};
+}
 
-export default presenceUpdateEvent;
+export default presenceUpdateEvent
