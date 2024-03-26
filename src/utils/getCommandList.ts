@@ -4,6 +4,8 @@ import { CommandModule } from "types";
 import desa from "../commands/desa";
 import updateUsers from "../commands/update_users";
 import removeUsers from "../commands/remove_users";
+import viewUser from "../commands/view_user";
+import compareUsers from "../commands/compare_users";
 
 const getCommandList = () => {
     let commands: CommandModule[] = [];
@@ -12,7 +14,7 @@ const getCommandList = () => {
         commands = [...commands, desa];
     }
 
-    commands = [...commands, updateUsers, removeUsers];
+    commands = [...commands, updateUsers, removeUsers, viewUser, compareUsers];
 
     return commands;
 };

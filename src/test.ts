@@ -11,7 +11,9 @@ async function getPlayerPP(username: string) {
     await auth.login(Number(CLIENT_ID), CLIENT_SECRET!, ["public"]);
     try {
         const user = await v2.user.details(username, "osu");
+        const activity = await v2.scores.user.category(user.id, "recent", { mode: 'osu', limit: '500' });
         console.log(user);
+        console.log(activity);
         if (user) {
             console.log(`Player ${username} has ${user} performance points.`);
         } else {
@@ -23,4 +25,4 @@ async function getPlayerPP(username: string) {
 }
 
 // Example usage: Get performance points for a player
-getPlayerPP('mrekk');
+getPlayerPP('ASomniphobeHere');

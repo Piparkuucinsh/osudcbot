@@ -14,7 +14,8 @@
     "db:gen": "prisma generate",
     "commands:gen": "ts-node src/register_commands.ts",
     "roles:gen": "ts-node src/register_roles.ts",
-    "test2": "ts-node src/test.ts"
+    "test2": "ts-node src/test.ts",
+    "test3": "ts-node src/utils/linkAccount.ts"
   },
   "author": "Piparkuucinsh",
   "license": "ISC",

@@ -1,9 +1,8 @@
 import { readFileSync } from "fs";
 
 export type Config = {
-  server_id: string;
   bot_channel_id: string;
-  bot_guild_id?: string;
+  bot_guild_id: string;
   desa?: string;
   newdesa?: string;
   bot_client_id: string;
@@ -22,9 +21,6 @@ try {
 export const config: Config = validateConfig(parsedConfig);
 
 function validateConfig(config: Partial<Config>): Config {
-    if (!config.server_id) {
-        throw new Error("Missing server_id in the config file");
-    }
     if (!config.bot_channel_id) {
         throw new Error("Missing bot_channel_id in the config file");
     }
