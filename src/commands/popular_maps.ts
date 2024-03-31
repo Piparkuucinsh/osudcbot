@@ -1,13 +1,18 @@
-import { SlashCommandBuilder, 
-    CommandInteraction, 
-    UserSelectMenuBuilder, 
-    RoleSelectMenuBuilder, 
+import {
+    SlashCommandBuilder,
+    CommandInteraction,
+    UserSelectMenuBuilder,
+    RoleSelectMenuBuilder,
     ActionRowBuilder,
     ComponentType,
     ChatInputCommandInteraction,
     StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder} from "discord.js";
+    StringSelectMenuOptionBuilder,
+    EmbedBuilder
+} from "discord.js";
+
 import { CommandModule } from "types";
+import { v2 } from "osu-api-extended";
 import { prisma } from "../lib/prisma";
 import { stat } from "fs";
 
@@ -16,6 +21,14 @@ interface Stat {
     last_updated: string;
     stat_value: number;
 }
+
+interface MapPlayCount {
+    beatmapId: BigInt;
+    beatmapName: string;
+    playCount: number;
+    beatmapCover?: string;
+}
+
 
 type EmbedField = {
     place: number;
@@ -42,54 +55,56 @@ enum Demographic {
     All = 'all'
 }
 
-const leaderboard: CommandModule = {
+const popular_maps: CommandModule = {
     data: new SlashCommandBuilder()
-        .setName("leaderboard")
-        .setDescription("View the leaderboard of the server's best users by stat")
-        .addStringOption(option =>
-            option.setName("statistic")
-                .setDescription("The statistic to compare users by")
-                .setRequired(true))
+        .setName("popular_maps")
+        .setDescription("View the most popular maps in the server, filter by users or roles")
         .addIntegerOption(option =>
             option.setName("limit")
-                .setDescription("The number of users to show in the leaderboard - default 10")
+                .setDescription("The number of maps to show in the leaderboard - default 10")
                 .setRequired(false))
         .addStringOption(option =>
             option.setName("filter_by")
-                .setDescription("The demographic to filter users by - default all")
-                .setRequired(false))
-        .addBooleanOption(option =>
-            option.setName("last_updated")
-                .setDescription("Show when each user's statistic was last updated - default false")
+                .setDescription("The demographic to filter map players by - default all")
                 .setRequired(false)),
 
     execute: async (interaction: CommandInteraction) => {
         let result_replied = false;
         try {
-            console.log('Preparing leaderboard')
-            const statistic_name = getStatistic(interaction);
+            console.log('Preparing map leaderboard');
+
             const limit = getLimit(interaction);
-            const last_updated = getLastUpdated(interaction);
             const filter_by = getFilterBy(interaction);
             const { users, replied } = await collectUsers(filter_by, interaction);
             if (replied) {
                 result_replied = true;
             }
-            const statistics = await collectLeaderboardStatistics(users, statistic_name, limit);
-            const leaderboardEmbed = embedLeaderStatistics(statistics, statistic_name, limit, last_updated);
             if (result_replied) {
-                await interaction.editReply({embeds: [leaderboardEmbed], components: []});
+                await interaction.editReply({ content: `Processing maps...`, components: [] });
             }
             else {
-                await interaction.reply({embeds: [leaderboardEmbed], components: []});
+                await interaction.reply({ content: `Processing maps...`, components: [] });
+                result_replied = true;
             }
+
+            const popularMaps = await getPopularMaps(users, limit);
+            const leaderboardEmbed = createLeaderboardEmbed(popularMaps, limit);
+
+            if (result_replied) {
+                await interaction.editReply({ content: "Map leaderboard", embeds: [leaderboardEmbed] });
+            } else {
+                await interaction.reply({ content: "Map leaderboard", embeds: [leaderboardEmbed] });
+            }
+            const message = "Which of these is the best map?";
+            await createMapPoll(interaction, popularMaps, limit);
+
         } catch (error) {
-            console.error('Error in compareUserCommand:', error);
+            console.error('Error in popularMapsCommand:', error);
             let errorMessage = "Failed to do something exceptional";
             if (error instanceof Error) {
                 errorMessage = error.message;
             }
-            if(result_replied) {
+            if (result_replied) {
                 await interaction.editReply(errorMessage);
             }
             else {
@@ -99,26 +114,13 @@ const leaderboard: CommandModule = {
     },
 };
 
-function getStatistic(interaction: CommandInteraction): string {
-    const statisticOption = interaction.options.data.find(opt => opt.name === 'statistic');
-    const statistic = statisticOption?.value as string | undefined;
-    if (!statistic) {
-        throw new Error("Please provide valid statistic to compare the users by.");
-    }
-    const valid_statistics = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
-    if (!valid_statistics.includes(statistic)) {
-        // Concat valid_statistics
-        throw new Error("Please provide a statistic that is present in the following list: " + valid_statistics.join(", "));
-    }
-    return statistic;
-}
 function getLimit(interaction: CommandInteraction): number {
     const statisticOption = interaction.options.data.find(opt => opt.name === 'limit');
     let statistic = statisticOption?.value as number | undefined;
     if (!statistic) {
-        statistic = 10;
+        statistic = 20;
     }
-    statistic = Math.min(statistic, 10);
+    statistic = Math.min(statistic, 20);
     return statistic;
 }
 
@@ -132,95 +134,7 @@ function getFilterBy(interaction: CommandInteraction): Demographic {
     return statistic;
 }
 
-function getLastUpdated(interaction: CommandInteraction): boolean {
-    const statisticOption = interaction.options.data.find(opt => opt.name === 'last_updated');
-    let statistic = statisticOption?.value as boolean | undefined;
-    // If statistic is undefined, default to false
-    if (!statistic) {
-        statistic = false;
-    }
-    return statistic;
-}
-
-async function collectLeaderboardStatistics(discordUserIds: string[], statistic: string, limit: number): Promise<Stat[]> {
-    let stats: Stat[] = [];
-    let order_by: 'asc' | 'desc' = 'desc';
-    if (statistic === 'global_rank' || statistic === 'country_rank' || statistic === 'highest_rank') {
-        order_by = 'asc';
-    }
-    const users = await prisma.user.findMany({
-        where: {
-            discord_user_id: { in: discordUserIds },
-            in_server: true
-        },
-        select: {
-            osu_user_id: true
-        }
-    });
-
-    // Filter out null osu_user_id
-    const osuUserIds = users.map(u => u.osu_user_id).filter(id => id !== null) as string[];
-
-    const leaderboardStats = await prisma.osuStats.findMany({
-        where: {
-            stat_name: statistic,
-            user_id: { in: osuUserIds }
-        },
-        take: limit,
-        orderBy: { stat_value: order_by },
-        include: {
-            User: true
-        }
-    });
-
-    leaderboardStats.forEach(stat => {
-        if (stat.User) {
-            stats.push({
-                username: stat.User.username,
-                last_updated: stat.last_updated.toISOString(),
-                stat_value: stat.stat_value!,
-            });
-        }
-    });
-
-    return stats;
-}
-
-
-function formatFieldName(fieldName: string): string {
-    return fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-}
-
-function embedLeaderStatistics(statistics: Stat[], stat_name: string, limit: number, last_updated: boolean = false): Embed {
-    const titleStatistic = formatFieldName(stat_name);
-
-    const embed: Embed = {
-        color: 3447003, // Consider changing this based on the context
-        title: `Top ${limit} Leaderboard - ${titleStatistic}`,
-        description: `Showing the top ${limit} users ranked by ${titleStatistic}.`,
-        fields: statistics.map((stat, index) => ({
-            name: `#${index + 1} - ${stat.username}`,
-            value: `Value: ${stat.stat_value}`,
-            last_updated: stat.last_updated,
-            inline: false
-        })) as EmbedField[],
-        footer: {
-            text: `Leaderboard last updated on ${new Date().toLocaleDateString()}`
-        },
-        // Optional: Add author or thumbnail if relevant
-    };
-
-    if (last_updated) {
-        embed.fields.forEach(field => {
-            field.value += `\nLast Updated: ${field.last_updated}`;
-        });
-    }
-
-    return embed;
-}
-
-
-async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{users: string[], replied: boolean}> {
+async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{ users: string[], replied: boolean }> {
     let users: string[] = [];
     let replied = false;
     if (filter_by === Demographic.Users) {
@@ -229,7 +143,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
             .setPlaceholder('Select users')
             .setMinValues(1)
             .setMaxValues(20);
-            
+
         const actionRow = new ActionRowBuilder<UserSelectMenuBuilder>()
             .setComponents(userSelect);
 
@@ -257,12 +171,12 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     }
                 });
 
-                resolve({users, replied});
+                resolve({ users, replied });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({users, replied});
+                resolve({ users, replied });
             });
         });
     }
@@ -272,7 +186,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
             .setPlaceholder('Select roles')
             .setMinValues(1)
             .setMaxValues(20);
-            
+
         const actionRow = new ActionRowBuilder<RoleSelectMenuBuilder>()
             .setComponents(roleSelect);
 
@@ -307,12 +221,12 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     }
                 }
 
-                resolve({users, replied});
+                resolve({ users, replied });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({users, replied});
+                resolve({ users, replied });
             });
         });
     }
@@ -322,8 +236,89 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
             users.push(user.id);
         });
     }
-    return {users, replied};
+    return { users, replied };
 }
 
 
-export default leaderboard;
+async function getPopularMaps(users: string[], limit: number): Promise<MapPlayCount[]> {
+    let mapIds = new Set<BigInt>();
+    for (const user_id of users) {
+        try {
+            const botUser = await prisma.user.findUnique({
+                where: {
+                    discord_user_id: user_id
+                }
+            });
+            if (!botUser) {
+                throw new Error(`User not found in database: ${user_id}`);
+            }
+            const osu_user_id = botUser.osu_user_id;
+            if (!osu_user_id) {
+                throw new Error(`Osu user not found in database for discord user: ${user_id}`);
+            }
+            const activities = await v2.user.activity(parseInt(osu_user_id), { limit: 10 });
+            console.log(activities);
+            activities.forEach(activity => {
+                if (activity.type === 'rank') {
+                    const beatmapId = BigInt(parseInt(activity.beatmap.url.split('/')[2]));
+                    mapIds.add(beatmapId);
+                }
+            });
+        } catch (error) {
+            console.error('Could not process discord user:', user_id);
+        }
+    }
+    // convert set to array
+    let mapPlayCounts: MapPlayCount[] = [];
+    for (const mapId of mapIds) {
+        // Fetch play count for each map
+        const details = await v2.beatmap.id.details(parseInt(mapId.toString()));
+        mapPlayCounts.push({ beatmapId: mapId, beatmapName: details.beatmapset.title, playCount: details.beatmapset.play_count, beatmapCover: details.beatmapset.covers.cover });
+    }
+    mapPlayCounts.sort((a, b) => b.playCount - a.playCount);
+    return mapPlayCounts.slice(0, limit);
+}
+
+
+function formatFieldName(fieldName: string): string {
+    return fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function createLeaderboardEmbed(popularMaps: MapPlayCount[], limit: number): EmbedBuilder {
+    const fields = popularMaps.map((map, index) => ({
+        name: `#${index + 1} - ${map.beatmapName.toString()}`,
+        value: `Play Count: ${map.playCount}`,
+        map_cover: map.beatmapCover,
+        inline: false
+    }));
+
+    return new EmbedBuilder()
+        .setColor(3447003)
+        .setTitle(`Top ${limit} Popular Maps Leaderboard`)
+        .setDescription(`Showing the top ${limit} most played maps.`)
+        .setFields(fields);
+}
+
+async function createMapPoll(interaction: CommandInteraction, popularMaps: MapPlayCount[], limit: number) {
+    const alphabet = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹', '🇺', '🇻', '🇼', '🇽', '🇾', '🇿'];
+    
+    // Limit the number of options to the number of available emojis
+    const mapOptions = popularMaps.slice(0, Math.min(limit, alphabet.length));
+
+    let description = mapOptions.map((map, index) => `${alphabet[index]}: ${map.beatmapName}`).join('\n');
+
+    const embed = new EmbedBuilder()
+        .setColor('#00D1CD')
+        .setTitle('Vote for the Best Map!')
+        .setDescription(description);
+
+    const pollMessage = await interaction.followUp({ embeds: [embed], fetchReply: true });
+
+    for (let i = 0; i < mapOptions.length; i++) {
+        await pollMessage.react(alphabet[i]);
+    }
+}
+
+
+
+export default popular_maps;

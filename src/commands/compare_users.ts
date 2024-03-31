@@ -2,18 +2,22 @@ import { SlashCommandBuilder, CommandInteraction, User } from "discord.js";
 import { CommandModule } from "types";
 import { prisma } from "../lib/prisma";
 
+interface StatisticalProperties {
+    pp_score?: number;
+    accuracy?: number;
+    play_count?: number;
+    total_score?: number;
+    ranked_score?: number;
+    level?: number;
+    global_rank?: number;
+    country_rank?: number;
+    highest_rank?: number;
+}
+
 interface UserStatistics {
     username: string;
     lastActivity?: string;
-    pp_score?: string;
-    accuracy?: string;
-    play_count?: string;
-    total_score?: string;
-    ranked_score?: string;
-    level?: string;
-    global_rank?: string;
-    country_rank?: string;
-    highest_rank?: string;
+    stats: StatisticalProperties;
 }
 
 type EmbedField = {
@@ -35,13 +39,13 @@ const compareUsers: CommandModule = {
     data: new SlashCommandBuilder()
         .setName("compare_users")
         .setDescription("Compare the statistics of two users")
-        .addStringOption(option =>
-            option.setName("username_1")
-                .setDescription("The username of the first user to compare")
+        .addUserOption(option =>
+            option.setName("user_1")
+                .setDescription("The first user to compare")
                 .setRequired(true))
-        .addStringOption(option =>
-            option.setName("username_2")
-                .setDescription("The username of the second user to compare")
+        .addUserOption(option =>
+            option.setName("user_2")
+                .setDescription("The second user to compare")
                 .setRequired(true)),
 
     execute: async (interaction: CommandInteraction) => {
@@ -66,42 +70,58 @@ const compareUsers: CommandModule = {
 };
 
 function getUsername(interaction: CommandInteraction): [string, string] {
-    const usernameOption1 = interaction.options.data.find(opt => opt.name === 'username_1');
-    const usernameOption2 = interaction.options.data.find(opt => opt.name === 'username_2');
-    const username1 = usernameOption1?.value as string | undefined;
-    const username2 = usernameOption2?.value as string | undefined;
-    if (!username1 || !username2) {
-        throw new Error("Please provide valid usernames to compare the users.");
+    const userOption1 = interaction.options.getUser('user_1');
+    const userOption2 = interaction.options.getUser('user_2');
+    if (!userOption1 || !userOption2) {
+        throw new Error("Please provide valid users.");
     }
-    return [username1, username2];
+    if (userOption1.username === userOption2.username) { 
+        throw new Error("Please provide two different users to compare.");
+    }
+    return [userOption1.username, userOption2.username];
 }
 
 async function collectStatistics(username: string): Promise<UserStatistics> {
-    const stats: Array<keyof UserStatistics> = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
-    const user = await prisma.osuUser.findFirst({
-        where: { username },
-    });
-    if (!user) {
-        throw new Error(`User ${username} does not exist in the database.`);
-    }
-    let userStatistics: UserStatistics = { username: user.username, lastActivity: user.last_activity_date?.toISOString() || 'Unknown' };
-    for (const stat of stats) {
-        try {
-            const userStat = await prisma.osuStats.findFirst({
-                where: { user_id: user.id, stat_name: stat }
-            });
-            if (userStat) {
-                userStatistics[stat] = userStat.stat_value;
+    let userStatistics: UserStatistics = { username: username, lastActivity: 'Unknown', stats: {} };
+    try {
+        const discordUser = await prisma.discordUser.findFirst({
+            where: { username: username },
+        });
+        const user = await prisma.user.findFirst({
+            where: { discord_user_id: discordUser!.id },
+        });
+
+        const osuUser = await prisma.osuUser.findFirst({
+            where: { id: user!.osu_user_id! },
+        });
+        if (!osuUser) {
+            throw new Error(`User ${username} does not exist in the database.`);
+        }
+        userStatistics = { 
+            username: osuUser.username, 
+            lastActivity: osuUser.last_activity_date?.toISOString() || 'Unknown',
+            stats: {} };
+        const stats: Array<keyof StatisticalProperties> = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
+        for (const stat of stats) {
+            try {
+                const userStat = await prisma.osuStats.findFirst({
+                    where: { user_id: osuUser.id, stat_name: stat }
+                });
+                if (userStat) {
+                    userStatistics.stats[stat] = userStat.stat_value!;
+                }
+            }
+            catch (error) {
+                console.error('Error in collectStatistics:', error);
+                let errorMessage = "Failed to do something exceptional";
+                if (error instanceof Error) {
+                    errorMessage = error.message;
+                }
+                throw new Error(errorMessage);
             }
         }
-        catch (error) {
-            console.error('Error in collectStatistics:', error);
-            let errorMessage = "Failed to do something exceptional";
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            throw new Error(errorMessage);
-        }
+    } catch (error) {
+        console.error('Error in collectStatistics:', error);
     }
     return userStatistics;
 }
@@ -122,23 +142,25 @@ function compareAndEmbedStatistics(statistics1: UserStatistics, statistics2: Use
     };
 
     // Predefined keys for comparison
-    const keys: (keyof UserStatistics)[] = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
+    const keys: (keyof StatisticalProperties)[] = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
 
     for (const key of keys) {
-        const value1 = statistics1[key] ?? 'N/A';
-        const value2 = statistics2[key] ?? 'N/A';
+        const value1 = statistics1.stats[key] ?? 'N/A';
+        const value2 = statistics2.stats[key] ?? 'N/A';
         let comparisonResult = '';
 
         if (value1 !== 'N/A' && value2 !== 'N/A') {
-            const num1 = parseFloat(value1);
-            const num2 = parseFloat(value2);
-
-            if (num1 > num2) {
-                comparisonResult = '🔼'; // Value for user1 is higher
-            } else if (num1 < num2) {
-                comparisonResult = '🔽'; // Value for user1 is lower
+            if (value1 > value2) {
+                comparisonResult = '🔼';
+            } else if (value1 < value2) {
+                comparisonResult = '🔽';
             } else {
-                comparisonResult = '➖'; // Values are equal
+                comparisonResult = '➖';
+            }
+
+            // Adjust for rank fields
+            if (key === 'global_rank' || key === 'country_rank' || key === 'highest_rank') {
+                comparisonResult = comparisonResult === '🔼' ? '🔽' : comparisonResult === '🔽' ? '🔼' : '➖';
             }
         }
 

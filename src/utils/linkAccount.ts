@@ -49,10 +49,10 @@ async function updateOsuUserInDatabase(osuUser: any, member: GuildMember): Promi
     const isFromLatvia = osuUser.country.code === "LV";
     console.log("Updating user in database")
     await prisma.osuUser.upsert({
-        where: { id: osuUser.id },
+        where: { id: osuUser.id.toString() },
         update: { enabled: isFromLatvia },
         create: {
-            id: osuUser.id,
+            id: osuUser.id.toString(),
             username: osuUser.username,
             pp_score: osuUser.statistics.pp,
             enabled: isFromLatvia,
@@ -62,11 +62,11 @@ async function updateOsuUserInDatabase(osuUser: any, member: GuildMember): Promi
     await updateOsuStats(osuUser);
 
     await prisma.user.upsert({
-        where: { discord_user_id: BigInt(member.id) },
-        update: { osu_user_id: osuUser.id },
+        where: { discord_user_id: member.id.toString() },
+        update: { osu_user_id: osuUser.id.toString() },
         create: {
-            discord_user_id: BigInt(member.id),
-            osu_user_id: osuUser.id,
+            discord_user_id: member.id.toString(),
+            osu_user_id: osuUser.id.toString(),
         },
     });
 
@@ -77,11 +77,12 @@ async function updateOsuStats(osuUser: any): Promise<void> {
     const stats = extractStats(osuUser);
     console.log(stats)
     for (const stat of stats) {
+        if (stat.value === null || isNaN(stat.value)) continue;
         await prisma.osuStats.upsert({
-            where: { user_id_stat_name: { user_id: osuUser.id, stat_name: stat.name } },
+            where: { user_id_stat_name: { user_id: osuUser.id.toString(), stat_name: stat.name } },
             update: { stat_value: stat.value, last_updated: new Date() },
             create: {
-                user_id: osuUser.id,
+                user_id: osuUser.id.toString(),
                 stat_name: stat.name,
                 stat_value: stat.value,
                 last_updated: new Date(),
@@ -90,17 +91,17 @@ async function updateOsuStats(osuUser: any): Promise<void> {
     }
 }
 
-function extractStats(osuUser: any): Array<{ name: string, value: string }> {
+function extractStats(osuUser: any): Array<{ name: string, value: number | null }> {
     const statistics = [
-        { name: 'pp_score', value: osuUser.statistics.pp?.toString() || "N/A" },
-        { name: 'accuracy', value: osuUser.statistics.hit_accuracy?.toString() || "N/A" },
-        { name: 'play_count', value: osuUser.statistics.play_count?.toString() || "N/A" },
-        { name: 'total_score', value: osuUser.statistics.total_score?.toString() || "N/A" },
-        { name: 'ranked_score', value: osuUser.statistics.ranked_score?.toString() || "N/A" },
-        { name: 'level', value: osuUser.statistics.level.current?.toString() || "N/A" },
-        { name: 'global_rank', value: osuUser.statistics.global_rank?.toString() || "N/A" },
-        { name: 'country_rank', value: osuUser.statistics.country_rank?.toString() || "N/A" },
-        { name: 'highest_rank', value: osuUser.rank_highest?.rank?.toString() || "N/A" },
+        { name: 'pp_score', value: osuUser.statistics.pp !== undefined ? parseFloat(osuUser.statistics.pp) : null },
+        { name: 'accuracy', value: osuUser.statistics.hit_accuracy !== undefined ? parseFloat(osuUser.statistics.hit_accuracy) : null },
+        { name: 'play_count', value: osuUser.statistics.play_count !== undefined ? parseFloat(osuUser.statistics.play_count) : null },
+        { name: 'total_score', value: osuUser.statistics.total_score !== undefined ? parseFloat(osuUser.statistics.total_score) : null },
+        { name: 'ranked_score', value: osuUser.statistics.ranked_score !== undefined ? parseFloat(osuUser.statistics.ranked_score) : null },
+        { name: 'level', value: osuUser.statistics.level && osuUser.statistics.level.current !== undefined ? parseFloat(osuUser.statistics.level.current) : null },
+        { name: 'global_rank', value: osuUser.statistics.global_rank !== undefined ? parseFloat(osuUser.statistics.global_rank) : null },
+        { name: 'country_rank', value: osuUser.statistics.country_rank !== undefined ? parseFloat(osuUser.statistics.country_rank) : null },
+        { name: 'highest_rank', value: osuUser.rank_highest && osuUser.rank_highest.rank !== undefined ? parseFloat(osuUser.rank_highest.rank) : null },
     ];
     return statistics;
 }

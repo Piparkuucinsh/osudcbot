@@ -45,7 +45,7 @@ const updateUsers: CommandModule = {
             // Use Prisma to check if the member is in the database
             const discordUser = await prisma.discordUser.findUnique({
                 where: {
-                    id: BigInt(member.id)
+                    id: member.id
                 },
             });
 
@@ -55,7 +55,7 @@ const updateUsers: CommandModule = {
 
                 await prisma.discordUser.create({
                     data: {
-                        id: BigInt(member.id),
+                        id: member.id,
                         username: member.user.tag, // Discord tag includes the username and discriminator
                         registration_date: joinedDate, // When they joined the server
                         last_activity_date: new Date(), // Set to current date-time for now
@@ -66,7 +66,7 @@ const updateUsers: CommandModule = {
             }
             const botUser = await prisma.user.findUnique({
                 where: {
-                    discord_user_id: BigInt(member.id)
+                    discord_user_id: member.id
                 }
             });
             console.log(`Bot user:`);

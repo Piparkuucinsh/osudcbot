@@ -15,7 +15,8 @@
     "commands:gen": "ts-node src/register_commands.ts",
     "roles:gen": "ts-node src/register_roles.ts",
     "test2": "ts-node src/test.ts",
-    "test3": "ts-node src/utils/linkAccount.ts"
+    "test3": "ts-node src/utils/linkAccount.ts",
+    "db:osuuser": "ts-node src/dummy_db/dummy_dc_user.ts"
   },
   "author": "Piparkuucinsh",
   "license": "ISC",
@@ -33,6 +34,7 @@
   "dependencies": {
     "@prisma/client": "5.9.1",
     "discord.js": "^14.14.1",
+    "discord.js-poll": "^1.2.1",
     "dotenv": "^16.4.1",
     "osu-api-extended": "^2.8.1"
   },
