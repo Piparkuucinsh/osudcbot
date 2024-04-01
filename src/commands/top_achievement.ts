@@ -59,8 +59,13 @@ const top_achievement: CommandModule = {
         .setDescription("View the top achievement of the week")
         .addStringOption(option =>
             option.setName("filter_by")
-                .setDescription("The demographic to filter players by - default all")
-                .setRequired(false))
+                .setDescription("The demographic to filter users by - default all")
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Users', value: 'users' },
+                    { name: 'Roles', value: 'roles' },
+                    { name: 'All', value: 'all' }
+                ))
         .addIntegerOption(option =>
             option.setName("days_limit")
                 .setDescription("The number of days to limit the achievement to - default 7")
@@ -73,7 +78,7 @@ const top_achievement: CommandModule = {
 
             const days_limit = getDaysLimit(interaction);
             const filter_by = getFilterBy(interaction);
-            const { users, replied } = await collectUsers(filter_by, interaction);
+            const { users, replied, raw_collect } = await collectUsers(filter_by, interaction);
             if (replied) {
                 result_replied = true;
             }
@@ -91,11 +96,18 @@ const top_achievement: CommandModule = {
                 throw new Error('No achievements found in time period');
             }
             const leaderboardEmbed = createAchievementEmbed(achievements);
-
+            let mentions: string = "";
+            if (filter_by === Demographic.All) {
+                mentions = `@everyone`;
+            } else if (filter_by === Demographic.Roles) {
+                mentions = raw_collect.map(id => `<@&${id}>`).join(' ');
+            } else if (filter_by === Demographic.Users) {
+                mentions = raw_collect.map(id => `<@${id}>`).join(' ');
+            }
             if (result_replied) {
-                await interaction.editReply({ content: "Top achievement of the week", embeds: [leaderboardEmbed] });
+                await interaction.editReply({ content: `${mentions}Top achievement of the week`, embeds: [leaderboardEmbed], allowedMentions: {parse:["everyone"]} });
             } else {
-                await interaction.reply({ content: "Top achievement of the week", embeds: [leaderboardEmbed] });
+                await interaction.reply({ content: `${mentions}Top achievement of the week`, embeds: [leaderboardEmbed], allowedMentions: {parse:["everyone"]} });
             }
 
         } catch (error) {
@@ -134,8 +146,9 @@ function getFilterBy(interaction: CommandInteraction): Demographic {
     return statistic;
 }
 
-async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{ users: string[], replied: boolean }> {
+async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{ users: string[], replied: boolean, raw_collect: string[] }> {
     let users: string[] = [];
+    let raw_collect: string[] = [];
     let replied = false;
     if (filter_by === Demographic.Users) {
         const userSelect = new UserSelectMenuBuilder()
@@ -168,15 +181,16 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     const userId = value;
                     if (!users.includes(userId)) {
                         users.push(userId);
+                        raw_collect.push(userId);
                     }
                 });
 
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
         });
     }
@@ -212,6 +226,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                 for (const roleId of roleIds) {
                     const role = await interaction.guild!.roles.fetch(roleId);
                     if (role && role.members) {
+                        raw_collect.push(role.id);
                         role.members.forEach(member => {
                             const userId = member.id;
                             if (!users.includes(userId)) {
@@ -221,12 +236,12 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     }
                 }
 
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
         });
     }
@@ -236,7 +251,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
             users.push(user.id);
         });
     }
-    return { users, replied };
+    return { users, replied, raw_collect };
 }
 
 

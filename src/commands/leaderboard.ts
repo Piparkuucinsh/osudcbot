@@ -49,7 +49,18 @@ const leaderboard: CommandModule = {
         .addStringOption(option =>
             option.setName("statistic")
                 .setDescription("The statistic to compare users by")
-                .setRequired(true))
+                .setRequired(true)
+                .addChoices(
+                    { name: 'PP Score', value: 'pp_score' },
+                    { name: 'Accuracy', value: 'accuracy' },
+                    { name: 'Play Count', value: 'play_count' },
+                    { name: 'Total Score', value: 'total_score' },
+                    { name: 'Ranked Score', value: 'ranked_score' },
+                    { name: 'Level', value: 'level' },
+                    { name: 'Global Rank', value: 'global_rank' },
+                    { name: 'Country Rank', value: 'country_rank' },
+                    { name: 'Highest Rank', value: 'highest_rank' }
+                ))
         .addIntegerOption(option =>
             option.setName("limit")
                 .setDescription("The number of users to show in the leaderboard - default 10")
@@ -57,7 +68,12 @@ const leaderboard: CommandModule = {
         .addStringOption(option =>
             option.setName("filter_by")
                 .setDescription("The demographic to filter users by - default all")
-                .setRequired(false))
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Users', value: 'users' },
+                    { name: 'Roles', value: 'roles' },
+                    { name: 'All', value: 'all' }
+                ))
         .addBooleanOption(option =>
             option.setName("last_updated")
                 .setDescription("Show when each user's statistic was last updated - default false")
@@ -104,11 +120,6 @@ function getStatistic(interaction: CommandInteraction): string {
     const statistic = statisticOption?.value as string | undefined;
     if (!statistic) {
         throw new Error("Please provide valid statistic to compare the users by.");
-    }
-    const valid_statistics = ['pp_score', 'accuracy', 'play_count', 'total_score', 'ranked_score', 'level', 'global_rank', 'country_rank', 'highest_rank'];
-    if (!valid_statistics.includes(statistic)) {
-        // Concat valid_statistics
-        throw new Error("Please provide a statistic that is present in the following list: " + valid_statistics.join(", "));
     }
     return statistic;
 }
@@ -159,7 +170,9 @@ async function collectLeaderboardStatistics(discordUserIds: string[], statistic:
     });
 
     // Filter out null osu_user_id
-    const osuUserIds = users.map(u => u.osu_user_id).filter(id => id !== null) as string[];
+    const osuUserIds = users
+        .filter(u => u.osu_user_id !== null)
+        .map(u => u.osu_user_id!) as string[];
 
     const leaderboardStats = await prisma.osuStats.findMany({
         where: {

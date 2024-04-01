@@ -15,6 +15,7 @@ import { CommandModule } from "types";
 import { v2 } from "osu-api-extended";
 import { prisma } from "../lib/prisma";
 import { stat } from "fs";
+import { raw } from "@prisma/client/runtime/library";
 
 interface Stat {
     username: string;
@@ -65,8 +66,13 @@ const popular_maps: CommandModule = {
                 .setRequired(false))
         .addStringOption(option =>
             option.setName("filter_by")
-                .setDescription("The demographic to filter map players by - default all")
-                .setRequired(false)),
+                .setDescription("The demographic to filter users by - default all")
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Users', value: 'users' },
+                    { name: 'Roles', value: 'roles' },
+                    { name: 'All', value: 'all' }
+                )),
 
     execute: async (interaction: CommandInteraction) => {
         let result_replied = false;
@@ -75,7 +81,7 @@ const popular_maps: CommandModule = {
 
             const limit = getLimit(interaction);
             const filter_by = getFilterBy(interaction);
-            const { users, replied } = await collectUsers(filter_by, interaction);
+            const { users, replied, raw_collect } = await collectUsers(filter_by, interaction);
             if (replied) {
                 result_replied = true;
             }
@@ -95,8 +101,7 @@ const popular_maps: CommandModule = {
             } else {
                 await interaction.reply({ content: "Map leaderboard", embeds: [leaderboardEmbed] });
             }
-            const message = "Which of these is the best map?";
-            await createMapPoll(interaction, popularMaps, limit);
+            await createMapPoll(interaction, popularMaps, limit, raw_collect, filter_by);
 
         } catch (error) {
             console.error('Error in popularMapsCommand:', error);
@@ -134,8 +139,9 @@ function getFilterBy(interaction: CommandInteraction): Demographic {
     return statistic;
 }
 
-async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{ users: string[], replied: boolean }> {
+async function collectUsers(filter_by: Demographic, interaction: CommandInteraction): Promise<{ users: string[], replied: boolean, raw_collect: string[] }> {
     let users: string[] = [];
+    let raw_collect: string[] = [];
     let replied = false;
     if (filter_by === Demographic.Users) {
         const userSelect = new UserSelectMenuBuilder()
@@ -168,15 +174,16 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     const userId = value;
                     if (!users.includes(userId)) {
                         users.push(userId);
+                        raw_collect.push(userId);
                     }
                 });
 
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
         });
     }
@@ -212,6 +219,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                 for (const roleId of roleIds) {
                     const role = await interaction.guild!.roles.fetch(roleId);
                     if (role && role.members) {
+                        raw_collect.push(role.id);
                         role.members.forEach(member => {
                             const userId = member.id;
                             if (!users.includes(userId)) {
@@ -221,12 +229,12 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
                     }
                 }
 
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
 
             collector.on('end', async () => {
                 // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied });
+                resolve({ users, replied, raw_collect });
             });
         });
     }
@@ -236,7 +244,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
             users.push(user.id);
         });
     }
-    return { users, replied };
+    return { users, replied, raw_collect };
 }
 
 
@@ -279,11 +287,6 @@ async function getPopularMaps(users: string[], limit: number): Promise<MapPlayCo
     return mapPlayCounts.slice(0, limit);
 }
 
-
-function formatFieldName(fieldName: string): string {
-    return fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-}
-
 function createLeaderboardEmbed(popularMaps: MapPlayCount[], limit: number): EmbedBuilder {
     const fields = popularMaps.map((map, index) => ({
         name: `#${index + 1} - ${map.beatmapName.toString()}`,
@@ -299,7 +302,7 @@ function createLeaderboardEmbed(popularMaps: MapPlayCount[], limit: number): Emb
         .setFields(fields);
 }
 
-async function createMapPoll(interaction: CommandInteraction, popularMaps: MapPlayCount[], limit: number) {
+async function createMapPoll(interaction: CommandInteraction, popularMaps: MapPlayCount[], limit: number, raw_collect: string[], filter_by: Demographic) {
     const alphabet = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹', '🇺', '🇻', '🇼', '🇽', '🇾', '🇿'];
     
     // Limit the number of options to the number of available emojis
@@ -312,7 +315,16 @@ async function createMapPoll(interaction: CommandInteraction, popularMaps: MapPl
         .setTitle('Vote for the Best Map!')
         .setDescription(description);
 
-    const pollMessage = await interaction.followUp({ embeds: [embed], fetchReply: true });
+    let mentions: string = "";
+    if (filter_by === Demographic.All) {
+        mentions = `@everyone`;
+    } else if (filter_by === Demographic.Roles) {
+        mentions = raw_collect.map(id => `<@&${id}>`).join(' ');
+    } else if (filter_by === Demographic.Users) {
+        mentions = raw_collect.map(id => `<@${id}>`).join(' ');
+    }
+
+    const pollMessage = await interaction.followUp({ content: mentions, embeds: [embed], fetchReply: true, allowedMentions: {parse:["everyone"]} });
 
     for (let i = 0; i < mapOptions.length; i++) {
         await pollMessage.react(alphabet[i]);
