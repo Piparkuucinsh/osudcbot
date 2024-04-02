@@ -1,4 +1,4 @@
-import { config } from '@/../config'
+import { config } from '@/config'
 import { ChannelType, MessageCreateOptions, MessagePayload } from 'discord.js'
 import { client } from '@/index'
 
