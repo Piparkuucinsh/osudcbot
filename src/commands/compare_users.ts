@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction, User } from "discord.js";
-import { CommandModule } from "types";
-import { prisma } from "../lib/prisma";
+import { CommandModule } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 interface StatisticalProperties {
     pp_score?: number;

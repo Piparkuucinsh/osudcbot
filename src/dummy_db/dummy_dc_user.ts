@@ -1,5 +1,5 @@
-import { config } from "../config";
-import { prisma } from "../lib/prisma";
+import { config } from "@/config";
+import { prisma } from "@/lib/prisma";
 import { v2, auth } from "osu-api-extended";
 import 'dotenv/config';
 
