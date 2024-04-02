@@ -5,15 +5,12 @@ import {
     RoleSelectMenuBuilder,
     ActionRowBuilder,
     ComponentType,
-    ChatInputCommandInteraction,
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder,
     EmbedBuilder
 } from "discord.js";
 
-import { CommandModule } from "types";
+import { CommandModule } from "@/types";
 import { v2 } from "osu-api-extended";
-import { prisma } from "../lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { stat } from "fs";
 
 

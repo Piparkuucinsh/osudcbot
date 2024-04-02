@@ -1,8 +1,8 @@
-import { config } from '../config'
+import { config } from '@/config'
 import { SlashCommandBuilder } from 'discord.js'
 import { CommandModule } from '@/types'
-import { prisma } from '../lib/prisma'
-import { v2 } from '../../node_modules/osu-api-extended/dist/index'
+import { prisma } from '@/lib/prisma'
+import { v2 } from 'osu-api-extended'
 import fs from 'fs'
 
 interface RoleConfig {
@@ -91,9 +91,8 @@ const updateUsers: CommandModule = {
                     continue
                 }
                 console.log('Got osu user from API')
-                // const user_pp_score = osuUserFromAPI.statistics.pp;
-                const user_pp_score = 1000.55
-                let roleToAdd = null
+                const user_pp_score = osuUserFromAPI.statistics.pp;
+                let roleToAdd = null;
                 let rolesToRemove = member.roles.cache.filter((r) =>
                     roles.some((role) => role.name === r.name)
                 )
