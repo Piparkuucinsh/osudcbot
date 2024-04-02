@@ -3,10 +3,13 @@ import { config } from '@/config'
 
 // Function to get the corresponding role ID based on rank.
 export const getRoleIdWithRank = (rank: number): string => {
-    if (rank > config.roles[0].threshold) return config.roles[0].roleId
+    if (rank > config.roles.rank_roles[0].threshold)
+        return config.roles.outside_range.id
 
-    const role = config.roles.find(({ threshold }) => rank <= threshold)
-    return role ? role.roleId : ''
+    const role = config.roles.rank_roles.find(
+        ({ threshold }) => rank <= threshold
+    )
+    return role ? role.id : ''
 }
 
 export const getCurrentRoleIds = async (
@@ -16,8 +19,15 @@ export const getCurrentRoleIds = async (
         const member = await guild.members.fetch(discordUserId)
         const roles = member.roles.cache.map((role) => role.id)
 
+        const allRoles = [
+            ...config.roles.rank_roles,
+            config.roles.restricted,
+            config.roles.outside_country,
+            config.roles.outside_range,
+        ]
+
         const matchingRole = roles.filter((roleId) =>
-            config.roles.some((role) => role.roleId === roleId)
+            allRoles.some((role) => role.id === roleId)
         )
 
         return matchingRole.length === 0 ? null : matchingRole

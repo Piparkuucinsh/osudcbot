@@ -3,18 +3,12 @@ import {
     ClientEvents,
     Collection,
     Events,
-    Routes,
     GatewayIntentBits,
-    REST,
 } from 'discord.js'
 import { CommandModule, EventModule } from '@/types'
 
-import presenceUpdateEvent from '@/events/presenceUpdate'
-import ReadyEventModule from '@/events/onReady'
-import onMemberJoinEvent from '../events/onMemberJoin'
-import onMemberLeaveEvent from '../events/onMemberLeave'
+import getEventList from '@/init/getEventsList'
 import getCommandList from '@/init/getCommandList'
-import { config } from '../config'
 
 import 'dotenv/config'
 
@@ -34,19 +28,10 @@ export const init_dc_client = async () => {
 
     await discordClient.login(process.env.BOT_TOKEN)
 
+    const events = getEventList();
+
     // add event listeners
     try {
-        type AnyEventModule = {
-            [K in keyof ClientEvents]: EventModule<K>
-        }[keyof ClientEvents]
-
-        const events: AnyEventModule[] = [
-            presenceUpdateEvent,
-            ReadyEventModule,
-            onMemberJoinEvent,
-            onMemberLeaveEvent,
-        ]
-
         for (const event of events as EventModule<keyof ClientEvents>[]) {
             if (event.once) {
                 discordClient.once(

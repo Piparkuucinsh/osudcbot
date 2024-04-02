@@ -15,7 +15,18 @@ export type CommandModule = {
     execute: (interaction: CommandInteraction) => Promise<void>
 }
 
-export interface RoleThreshold {
+export interface Role {
+    id: string
+    name: string
+}
+
+export interface RankRole extends Role {
     threshold: number
-    roleId: string
+}
+
+export type Roles = {
+    rank_roles: RankRole[]
+    restricted: Role
+    outside_country: Role
+    outside_range: Role
 }
