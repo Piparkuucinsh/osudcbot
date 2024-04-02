@@ -6,6 +6,9 @@ import updateUsers from '@/commands/update_users'
 import removeUsers from '@/commands/remove_users'
 import viewUser from '@/commands/view_user'
 import compareUsers from '@/commands/compare_users'
+import leaderboard from "@/commands/leaderboard";
+import popular_maps from "@/commands/popular_maps";
+import top_achievement from "@/commands/top_achievement";
 
 const getCommandList = () => {
     let commands: CommandModule[] = []
@@ -14,7 +17,7 @@ const getCommandList = () => {
         commands = [...commands, desa]
     }
 
-    commands = [...commands, updateUsers, removeUsers, viewUser, compareUsers]
+    commands = [...commands, updateUsers, removeUsers, viewUser, compareUsers, leaderboard, popular_maps, top_achievement]
 
     return commands
 }

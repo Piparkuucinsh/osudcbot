@@ -15,7 +15,8 @@
         "commands:gen": "ts-node src/register_commands.ts",
         "roles:gen": "ts-node src/register_roles.ts",
         "test2": "ts-node src/test.ts",
-        "test3": "ts-node src/utils/linkAccount.ts"
+        "test3": "ts-node src/utils/linkAccount.ts",
+        "db:osuuser": "ts-node src/dummy_db/dummy_dc_user.ts"
     },
     "author": "Piparkuucinsh",
     "license": "ISC",
@@ -40,5 +41,5 @@
         "dotenv": "^16.4.5",
         "osu-api-extended": "^2.8.3"
     },
-    "packageManager": "pnpm@8.15.4+sha256.cea6d0bdf2de3a0549582da3983c70c92ffc577ff4410cbf190817ddc35137c2"
+    "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
 }
