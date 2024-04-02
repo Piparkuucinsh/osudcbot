@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
-import { CommandModule } from 'types'
-import { prisma } from '../lib/prisma'
+import { CommandModule } from '@/types'
+import { prisma } from '@/lib/prisma'
 
 const removeUserCommand: CommandModule = {
     data: new SlashCommandBuilder()

@@ -3,12 +3,9 @@ import { SlashCommandBuilder,
     UserSelectMenuBuilder, 
     RoleSelectMenuBuilder, 
     ActionRowBuilder,
-    ComponentType,
-    ChatInputCommandInteraction,
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder} from "discord.js";
-import { CommandModule } from "types";
-import { prisma } from "../lib/prisma";
+    ComponentType} from "discord.js";
+import { CommandModule } from "@/types";
+import { prisma } from "@/lib/prisma";
 import { stat } from "fs";
 
 interface Stat {
@@ -41,6 +38,10 @@ enum Demographic {
     Roles = 'roles',
     All = 'all'
 }
+
+type UserDB = {
+    osu_user_id: string; // or string, depending on how osu_user_id is defined in your database schema
+  };
 
 const leaderboard: CommandModule = {
     data: new SlashCommandBuilder()
@@ -159,7 +160,7 @@ async function collectLeaderboardStatistics(discordUserIds: string[], statistic:
     if (statistic === 'global_rank' || statistic === 'country_rank' || statistic === 'highest_rank') {
         order_by = 'asc';
     }
-    const users = await prisma.user.findMany({
+    const users: UserDB[] = await prisma.user.findMany({
         where: {
             discord_user_id: { in: discordUserIds },
             in_server: true
@@ -167,7 +168,7 @@ async function collectLeaderboardStatistics(discordUserIds: string[], statistic:
         select: {
             osu_user_id: true
         }
-    });
+    }) as UserDB[];
 
     // Filter out null osu_user_id
     const osuUserIds = users

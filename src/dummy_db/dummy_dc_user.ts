@@ -1,7 +1,8 @@
-import { prisma } from '../lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { v2, auth } from 'osu-api-extended'
 import 'dotenv/config'
 import { response } from 'osu-api-extended/dist/types/v2_user_details'
+
 
 function extractStats(
     osuUser: response

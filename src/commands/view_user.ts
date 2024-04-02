@@ -1,7 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction, User } from "discord.js";
-import { CommandModule } from "types";
-import { prisma } from "../lib/prisma";
-import { user } from "osu-api-extended/dist/api/v1";
+import { CommandModule } from "@/types";
+import { prisma } from "@/lib/prisma";
 
 interface StatisticalProperties {
     pp_score?: number;
