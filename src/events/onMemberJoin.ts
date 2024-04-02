@@ -8,19 +8,19 @@ const onMemberJoinEvent: EventModule<Events.GuildMemberAdd> = {
     execute: async (member: GuildMember) => {
         try {
             const user = await prisma.user.findFirst({
-                where: { discord_user_id: BigInt(member.id) },
+                where: { discord_user_id: member.id },
             })
             if (user) {
                 //send welcome message welcoming back
                 await prisma.user.update({
-                    where: { discord_user_id: BigInt(member.id) },
+                    where: { discord_user_id: member.id },
                     data: { in_server: true },
                 })
             } else {
                 //send welcome message
                 await prisma.user.create({
                     data: {
-                        discord_user_id: BigInt(member.id),
+                        discord_user_id: member.id,
                         in_server: true,
                     },
                 })

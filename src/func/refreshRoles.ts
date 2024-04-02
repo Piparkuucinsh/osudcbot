@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { getCurrentRoleId, getRoleWithRank } from '@/utils/roles'
+import { getCurrentRoleIds, getRoleIdWithRank } from '@/utils/roles'
 import { v2 } from 'osu-api-extended'
 
 export const refreshRoles = async () => {
@@ -27,7 +27,7 @@ export const refreshRoles = async () => {
         if (user.osu_user_id) {
             let position = id_list.indexOf(user.osu_user_id)
 
-            const currentRoleId = await getCurrentRoleId(
+            const currentRoleId = await getCurrentRoleIds(
                 String(user.discord_user_id)
             )
 
@@ -37,9 +37,10 @@ export const refreshRoles = async () => {
                         user.osu_user_id,
                         'osu'
                     )
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                     if (
                         osuUserFromApi &&
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (osuUserFromApi as any).error == null
                     ) {
                         const peppy = await v2.user.details(2, 'osu')
@@ -65,7 +66,7 @@ export const refreshRoles = async () => {
                 }
             }
 
-            const newRoleId = getRoleWithRank(position)
+            const newRoleId = getRoleIdWithRank(position)
 
             //set new role
         }

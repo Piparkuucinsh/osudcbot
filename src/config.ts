@@ -1,11 +1,11 @@
 import { readFileSync } from 'fs'
-import { RoleThreshold } from '@/types'
+import { Roles } from '@/types'
 
 export type Config = {
     bot_channel_id: string
     bot_guild_id: string
     desa?: string
-    roles: RoleThreshold[]
+    roles: Roles
 }
 
 const configFileContent = readFileSync('config.json', 'utf8')

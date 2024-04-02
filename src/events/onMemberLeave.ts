@@ -10,7 +10,7 @@ const onMemberLeaveEvent: EventModule<Events.GuildMemberRemove> = {
             // member.displayName left the server
             // maybe banned?
             await prisma.user.update({
-                where: { discord_user_id: BigInt(member.id) },
+                where: { discord_user_id: member.id },
                 data: { in_server: false },
             })
         } catch (err) {
