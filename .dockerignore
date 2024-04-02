@@ -1,8 +1,0 @@
-node_modules
-.github
-.idea
-.vscode
-dist
-spec
-bot.py
-REAMDE.md
