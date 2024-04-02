@@ -111,35 +111,35 @@ function extractStats(
             name: 'pp_score',
             value:
                 osuUser.statistics.pp !== undefined
-                    ? parseFloat(osuUser.statistics.pp)
+                    ? osuUser.statistics.pp
                     : null,
         },
         {
             name: 'accuracy',
             value:
                 osuUser.statistics.hit_accuracy !== undefined
-                    ? parseFloat(osuUser.statistics.hit_accuracy)
+                    ? osuUser.statistics.hit_accuracy
                     : null,
         },
         {
             name: 'play_count',
             value:
                 osuUser.statistics.play_count !== undefined
-                    ? parseFloat(osuUser.statistics.play_count)
+                    ? osuUser.statistics.play_count
                     : null,
         },
         {
             name: 'total_score',
             value:
                 osuUser.statistics.total_score !== undefined
-                    ? parseFloat(osuUser.statistics.total_score)
+                    ? osuUser.statistics.total_score
                     : null,
         },
         {
             name: 'ranked_score',
             value:
                 osuUser.statistics.ranked_score !== undefined
-                    ? parseFloat(osuUser.statistics.ranked_score)
+                    ? osuUser.statistics.ranked_score
                     : null,
         },
         {
@@ -147,28 +147,28 @@ function extractStats(
             value:
                 osuUser.statistics.level &&
                 osuUser.statistics.level.current !== undefined
-                    ? parseFloat(osuUser.statistics.level.current)
+                    ? osuUser.statistics.level.current
                     : null,
         },
         {
             name: 'global_rank',
             value:
                 osuUser.statistics.global_rank !== undefined
-                    ? parseFloat(osuUser.statistics.global_rank)
+                    ? osuUser.statistics.global_rank
                     : null,
         },
         {
             name: 'country_rank',
             value:
                 osuUser.statistics.country_rank !== undefined
-                    ? parseFloat(osuUser.statistics.country_rank)
+                    ? osuUser.statistics.country_rank
                     : null,
         },
         {
             name: 'highest_rank',
             value:
                 osuUser.rank_highest && osuUser.rank_highest.rank !== undefined
-                    ? parseFloat(osuUser.rank_highest.rank)
+                    ? osuUser.rank_highest.rank
                     : null,
         },
     ]

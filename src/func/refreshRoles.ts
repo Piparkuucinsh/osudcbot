@@ -25,7 +25,7 @@ export const refreshRoles = async () => {
 
     for (const user of users) {
         if (user.osu_user_id) {
-            let position = id_list.indexOf(user.osu_user_id)
+            let position = id_list.indexOf(parseInt(user.osu_user_id))
 
             const currentRoleId = await getCurrentRoleIds(
                 String(user.discord_user_id)
