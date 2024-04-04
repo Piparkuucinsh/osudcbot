@@ -1,39 +1,39 @@
 name: CI
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    types: [opened, synchronize]
+    push:
+        branches: ['main']
+    pull_request:
+        types: [opened, synchronize]
 
 jobs:
-  build:
-    name: Build and Test
-    timeout-minutes: 15
-    runs-on: ubuntu-latest
+    build:
+        name: Build and Test
+        timeout-minutes: 15
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: latest
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Build
-        run: pnpm db:gen && pnpm build
+            - name: Build
+              run: pnpm db:gen && pnpm build
 
-      - name: Lint
-        run: pnpm lint
+            - name: Lint
+              run: pnpm lint
 
-      - name: Format check
-        run: pnpm format
+            - name: Format check
+              run: pnpm format

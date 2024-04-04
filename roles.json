@@ -1,0 +1,56 @@
+[
+    {
+        "name": "Bot",
+        "color": "#000000",
+        "hoist": true
+    },
+    {
+        "name": "Beginner",
+        "color": "#add8e6",
+        "lower_bound": 0,
+        "upper_bound": 500,
+        "hoist": true
+    },
+    {
+        "name": "Novice",
+        "color": "#008000",
+        "lower_bound": 500,
+        "upper_bound": 1000,
+        "hoist": true
+    },
+    {
+        "name": "Intermediate",
+        "color": "#0000ff",
+        "lower_bound": 1000,
+        "upper_bound": 2000,
+        "hoist": true
+    },
+    {
+        "name": "Advanced",
+        "color": "#800080",
+        "lower_bound": 2000,
+        "upper_bound": 3500,
+        "hoist": true
+    },
+    {
+        "name": "Expert",
+        "color": "#ffa500",
+        "lower_bound": 3500,
+        "upper_bound": 5000,
+        "hoist": true
+    },
+    {
+        "name": "Elite",
+        "color": "#ff0000",
+        "lower_bound": 5000,
+        "upper_bound": 7500,
+        "hoist": true
+    },
+    {
+        "name": "osu! Legend",
+        "color": "#ffd700",
+        "lower_bound": 7500,
+        "upper_bound": 10000000,
+        "hoist": true
+    }
+]
