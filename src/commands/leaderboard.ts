@@ -8,7 +8,6 @@ import {
 } from 'discord.js'
 import { CommandModule } from '@/types'
 import { prisma } from '@/lib/prisma'
-import { stat } from 'fs'
 
 interface Stat {
     username: string
@@ -307,7 +306,7 @@ async function collectUsers(
                 userSelect
             )
 
-        const reply = await interaction.reply({
+        await interaction.reply({
             components: [actionRow],
             content: 'Select users',
             ephemeral: true,
@@ -354,7 +353,7 @@ async function collectUsers(
                 roleSelect
             )
 
-        const reply = await interaction.reply({
+        await interaction.reply({
             components: [actionRow],
             content: 'Select roles',
             ephemeral: true,

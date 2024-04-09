@@ -11,7 +11,6 @@ import {
 import { CommandModule } from '@/types'
 import { v2 } from 'osu-api-extended'
 import { prisma } from '@/lib/prisma'
-import { stat } from 'fs'
 
 interface Achievement {
     beatmapId: bigint
@@ -23,24 +22,6 @@ interface Achievement {
     profilePicture: string
 }
 
-type EmbedField = {
-    place: number
-    name: string
-    value: string
-    last_updated: string
-    inline: boolean
-    color: number
-}
-
-type Embed = {
-    color: number
-    title: string
-    description: string
-    fields: EmbedField[]
-    footer?: {
-        text: string
-    }
-}
 
 enum Demographic {
     Users = 'users',
@@ -186,7 +167,7 @@ async function collectUsers(
                 userSelect
             )
 
-        const reply = await interaction.reply({
+        await interaction.reply({
             components: [actionRow],
             content: 'Select users',
             ephemeral: true,
@@ -234,7 +215,7 @@ async function collectUsers(
                 roleSelect
             )
 
-        const reply = await interaction.reply({
+        await interaction.reply({
             components: [actionRow],
             content: 'Select roles',
             ephemeral: true,

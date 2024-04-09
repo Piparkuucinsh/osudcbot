@@ -44,8 +44,8 @@ function extractUsernameFromActivity(activity: Activity): string | null {
     // console.log('Large text:', largeText)
     if (!largeText) return null
 
-    const username = largeText.split('(', 1)[0].trim()
     return largeText
+    // const username = largeText.split('(', 1)[0].trim()
     // return username === largeText ? null : username;
 }
 
@@ -146,7 +146,7 @@ function extractStats(
             name: 'level',
             value:
                 osuUser.statistics.level &&
-                osuUser.statistics.level.current !== undefined
+                    osuUser.statistics.level.current !== undefined
                     ? osuUser.statistics.level.current
                     : null,
         },

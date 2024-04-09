@@ -46,7 +46,7 @@ function extractStats(
             name: 'level',
             value:
                 osuUser.statistics.level &&
-                osuUser.statistics.level.current !== undefined
+                    osuUser.statistics.level.current !== undefined
                     ? osuUser.statistics.level.current
                     : null,
         },
@@ -79,7 +79,7 @@ function extractStats(
 const usernames = ['Piparkuucinsh']
 for (const username of usernames) {
     try {
-        ;(async () => {
+        (async () => {
             const client_id: string = process.env.OSU_CLIENT_ID!
             const secret_key: string = process.env.OSU_CLIENT_SECRET!
 

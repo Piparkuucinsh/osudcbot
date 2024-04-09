@@ -4,18 +4,6 @@ import { CommandModule } from '@/types'
 import { getCurrentRoleIds, getRoleIdWithRank } from '@/utils/roles'
 import { prisma } from '@/lib/prisma'
 import { v2 } from 'osu-api-extended'
-import fs from 'fs'
-
-interface RoleConfig {
-    name: string
-    color: string
-    lower_bound?: number
-    upper_bound?: number
-    hoist?: boolean
-}
-
-// Read role information from JSON file
-const roles: RoleConfig[] = JSON.parse(fs.readFileSync('roles.json', 'utf-8'))
 
 const updateUsers: CommandModule = {
     data: new SlashCommandBuilder()
