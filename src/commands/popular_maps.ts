@@ -20,7 +20,7 @@ interface Stat {
 }
 
 interface MapPlayCount {
-    beatmapId: BigInt;
+    beatmapId: bigint;
     beatmapName: string;
     playCount: number;
     beatmapCover?: string;
@@ -245,7 +245,7 @@ async function collectUsers(filter_by: Demographic, interaction: CommandInteract
 
 
 async function getPopularMaps(users: string[], limit: number): Promise<MapPlayCount[]> {
-    let mapIds = new Set<BigInt>();
+    let mapIds = new Set<bigint>();
     for (const user_id of users) {
         try {
             const botUser = await prisma.user.findUnique({

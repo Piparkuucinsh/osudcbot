@@ -1,6 +1,7 @@
 import { config } from '@/config'
 import { SlashCommandBuilder } from 'discord.js'
 import { CommandModule } from '@/types'
+import { getCurrentRoleIds, getRoleIdWithRank } from '@/utils/roles'
 import { prisma } from '@/lib/prisma'
 import { v2 } from 'osu-api-extended'
 import fs from 'fs'
@@ -74,8 +75,6 @@ const updateUsers: CommandModule = {
                     discord_user_id: member.id
                 }
             });
-            console.log(`Bot user:`);
-            console.log(botUser);
             if (botUser) {
                 // Get the osu user from the database
                 const osu_user_id = botUser!.osu_user_id!
@@ -91,46 +90,19 @@ const updateUsers: CommandModule = {
                     continue
                 }
                 console.log('Got osu user from API')
-                const user_pp_score = osuUserFromAPI.statistics.pp;
-                let roleToAdd = null;
-                let rolesToRemove = member.roles.cache.filter((r) =>
-                    roles.some((role) => role.name === r.name)
-                )
-
-                for (const role of roles) {
-                    if (!role.lower_bound && !role.upper_bound) {
-                        console.log(
-                            `Role ${role.name} is missing bounds(${role.lower_bound} - ${role.upper_bound}), skipping.`
-                        )
-                        continue
-                    }
-                    console.log(`Checking role: ${role.name}`)
-                    console.log(
-                        `Role bounds: ${role.lower_bound} - ${role.upper_bound}`
-                    )
-                    console.log(`User pp score: ${user_pp_score}`)
-                    if (
-                        user_pp_score >= role.lower_bound! &&
-                        user_pp_score < role.upper_bound!
-                    ) {
-                        roleToAdd = guild.roles.cache.find(
-                            (r) => r.name === role.name
-                        )
-                        rolesToRemove = rolesToRemove.filter(
-                            (r) => r.name !== role.name
-                        )
-                    }
+                const user_country_rank = osuUserFromAPI.statistics.country_rank;
+                if (user_country_rank === null) {
+                    console.log('User country rank is null')
+                    continue
                 }
-                console.log(
-                    `Roles to add: ${roleToAdd ? roleToAdd.name : 'None'}`
-                )
-                console.log(
-                    `Roles to remove: ${rolesToRemove.map((r) => r.name).join(', ')}`
-                )
-                // Use or operrator to check if roleToAdd is not null or roleToRemove is not empty
-                if (roleToAdd || rolesToRemove.size > 0) {
-                    await member.roles.remove(rolesToRemove)
-                    await member.roles.add(roleToAdd!)
+                const roleId = getRoleIdWithRank(user_country_rank);
+                console.log(`Role ID: ${roleId}`)
+                const currentRoleIds = await getCurrentRoleIds(member.id);
+                if (currentRoleIds) {
+                    await member.roles.remove(currentRoleIds);
+                }
+                if (roleId) {
+                    await member.roles.add(roleId);
                 }
             }
         }

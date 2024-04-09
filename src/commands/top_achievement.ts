@@ -15,7 +15,7 @@ import { stat } from "fs";
 
 
 interface Achievement {
-    beatmapId: BigInt;
+    beatmapId: bigint;
     beatmapName: string;
     username: string;
     playCount: number;
