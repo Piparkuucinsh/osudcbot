@@ -28,7 +28,7 @@ export const init_dc_client = async () => {
 
     await discordClient.login(process.env.BOT_TOKEN)
 
-    const events = getEventList();
+    const events = getEventList()
 
     // add event listeners
     try {

@@ -10,7 +10,12 @@ const getEventList = () => {
         [K in keyof ClientEvents]: EventModule<K>
     }[keyof ClientEvents]
 
-    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule, onMemberJoinEvent, onMemberLeaveEvent];
+    const events: AnyEventModule[] = [
+        presenceUpdateEvent,
+        ReadyEventModule,
+        onMemberJoinEvent,
+        onMemberLeaveEvent,
+    ]
 
     return events
 }

@@ -37,7 +37,7 @@ const updateUsers: CommandModule = {
 
         const members = await guild.members.fetch()
 
-        let usersAdded = []
+        const usersAdded = []
         for (const member of members.values()) {
             if (member.user.bot) {
                 member.roles.add(
@@ -49,7 +49,7 @@ const updateUsers: CommandModule = {
             // Use Prisma to check if the member is in the database
             const discordUser = await prisma.discordUser.findUnique({
                 where: {
-                    id: member.id
+                    id: member.id,
                 },
             })
 
@@ -72,9 +72,9 @@ const updateUsers: CommandModule = {
             }
             const botUser = await prisma.user.findUnique({
                 where: {
-                    discord_user_id: member.id
-                }
-            });
+                    discord_user_id: member.id,
+                },
+            })
             if (botUser) {
                 // Get the osu user from the database
                 const osu_user_id = botUser!.osu_user_id!
@@ -90,19 +90,19 @@ const updateUsers: CommandModule = {
                     continue
                 }
                 console.log('Got osu user from API')
-                const user_country_rank = osuUserFromAPI.statistics.country_rank;
+                const user_country_rank = osuUserFromAPI.statistics.country_rank
                 if (user_country_rank === null) {
                     console.log('User country rank is null')
                     continue
                 }
-                const roleId = getRoleIdWithRank(user_country_rank);
+                const roleId = getRoleIdWithRank(user_country_rank)
                 console.log(`Role ID: ${roleId}`)
-                const currentRoleIds = await getCurrentRoleIds(member.id);
+                const currentRoleIds = await getCurrentRoleIds(member.id)
                 if (currentRoleIds) {
-                    await member.roles.remove(currentRoleIds);
+                    await member.roles.remove(currentRoleIds)
                 }
                 if (roleId) {
-                    await member.roles.add(roleId);
+                    await member.roles.add(roleId)
                 }
             }
         }

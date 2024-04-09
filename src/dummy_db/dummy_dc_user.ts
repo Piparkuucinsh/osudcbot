@@ -3,7 +3,6 @@ import { v2, auth } from 'osu-api-extended'
 import 'dotenv/config'
 import { response } from 'osu-api-extended/dist/types/v2_user_details'
 
-
 function extractStats(
     osuUser: response
 ): Array<{ name: string; value: number | null }> {
@@ -47,7 +46,7 @@ function extractStats(
             name: 'level',
             value:
                 osuUser.statistics.level &&
-                    osuUser.statistics.level.current !== undefined
+                osuUser.statistics.level.current !== undefined
                     ? osuUser.statistics.level.current
                     : null,
         },
@@ -80,7 +79,7 @@ function extractStats(
 const usernames = ['Piparkuucinsh']
 for (const username of usernames) {
     try {
-        (async () => {
+        ;(async () => {
             const client_id: string = process.env.OSU_CLIENT_ID!
             const secret_key: string = process.env.OSU_CLIENT_SECRET!
 
