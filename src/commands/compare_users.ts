@@ -1,39 +1,8 @@
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import { SlashCommandBuilder, CommandInteraction, EmbedBuilder } from 'discord.js'
 import { CommandModule } from '@/types'
 import { prisma } from '@/lib/prisma'
-
-interface StatisticalProperties {
-    pp_score?: number
-    accuracy?: number
-    play_count?: number
-    total_score?: number
-    ranked_score?: number
-    level?: number
-    global_rank?: number
-    country_rank?: number
-    highest_rank?: number
-}
-
-interface UserStatistics {
-    username: string
-    lastActivity?: string
-    stats: StatisticalProperties
-}
-
-type EmbedField = {
-    name: string
-    value: string
-    inline: boolean
-}
-
-type Embed = {
-    color: number
-    title: string
-    fields: EmbedField[]
-    footer?: {
-        text: string
-    }
-}
+import { UserStatistics, StatisticalProperties } from '@/models'
+import { DiscordUser, OsuStats, OsuUser, User } from '@prisma/client'
 
 const compareUsers: CommandModule = {
     data: new SlashCommandBuilder()
@@ -89,31 +58,33 @@ function getUsername(interaction: CommandInteraction): [string, string] {
 }
 
 async function collectStatistics(username: string): Promise<UserStatistics> {
-    let userStatistics: UserStatistics = {
+    const userStatistics: UserStatistics = {
         username: username,
         lastActivity: 'Unknown',
         stats: {},
     }
     try {
-        const discordUser = await prisma.discordUser.findFirst({
+        const discordUser: DiscordUser | null = await prisma.discordUser.findFirst({
             where: { username: username },
         })
-        const user = await prisma.user.findFirst({
+        if (discordUser === null) {
+            throw new Error(`No DiscordUser found for username ${username}`)
+        }
+        const user: User | null = await prisma.user.findFirst({
             where: { discord_user_id: discordUser!.id },
         })
+        if (user === null) {
+            throw new Error(`No User found for DiscordUser ${username}`)
+        }
 
-        const osuUser = await prisma.osuUser.findFirst({
+        const osuUser: OsuUser | null = await prisma.osuUser.findFirst({
             where: { id: user!.osu_user_id! },
         })
-        if (!osuUser) {
-            throw new Error(`User ${username} does not exist in the database.`)
+        if (osuUser === null) {
+            throw new Error(`No OsuUser found for User ${username}`)
         }
-        userStatistics = {
-            username: osuUser.username,
-            lastActivity:
-                osuUser.last_activity_date?.toISOString() || 'Unknown',
-            stats: {},
-        }
+        userStatistics.username = osuUser.username
+        userStatistics.lastActivity = osuUser.last_activity_date?.toISOString() || 'Unknown'
         const stats: Array<keyof StatisticalProperties> = [
             'pp_score',
             'accuracy',
@@ -127,7 +98,7 @@ async function collectStatistics(username: string): Promise<UserStatistics> {
         ]
         for (const stat of stats) {
             try {
-                const userStat = await prisma.osuStats.findFirst({
+                const userStat: OsuStats | null = await prisma.osuStats.findFirst({
                     where: { user_id: osuUser.id, stat_name: stat },
                 })
                 if (userStat) {
@@ -155,15 +126,11 @@ function formatFieldName(fieldName: string): string {
 function compareAndEmbedStatistics(
     statistics1: UserStatistics,
     statistics2: UserStatistics
-): Embed {
-    const embed: Embed = {
-        color: 3447003, // Neutral color
-        title: `Comparison: ${statistics1.username} vs ${statistics2.username}`,
-        fields: [],
-        footer: {
-            text: `Comparison as of ${new Date().toLocaleDateString()}`,
-        },
-    }
+): EmbedBuilder {
+    const embed = new EmbedBuilder()
+        .setColor(3447003) // Neutral color
+        .setTitle(`Comparison: ${statistics1.username} vs ${statistics2.username}`)
+        .setFooter({ text: `Comparison as of ${new Date().toLocaleDateString()}` });
 
     // Predefined keys for comparison
     const keys: (keyof StatisticalProperties)[] = [
@@ -176,20 +143,20 @@ function compareAndEmbedStatistics(
         'global_rank',
         'country_rank',
         'highest_rank',
-    ]
+    ];
 
     for (const key of keys) {
-        const value1 = statistics1.stats[key] ?? 'N/A'
-        const value2 = statistics2.stats[key] ?? 'N/A'
-        let comparisonResult = ''
+        const value1 = statistics1.stats[key] ?? 'N/A';
+        const value2 = statistics2.stats[key] ?? 'N/A';
+        let comparisonResult = '';
 
         if (value1 !== 'N/A' && value2 !== 'N/A') {
             if (value1 > value2) {
-                comparisonResult = '🔼'
+                comparisonResult = '🔼';
             } else if (value1 < value2) {
-                comparisonResult = '🔽'
+                comparisonResult = '🔽';
             } else {
-                comparisonResult = '➖'
+                comparisonResult = '➖';
             }
 
             // Adjust for rank fields
@@ -203,18 +170,17 @@ function compareAndEmbedStatistics(
                         ? '🔽'
                         : comparisonResult === '🔽'
                             ? '🔼'
-                            : '➖'
+                            : '➖';
             }
         }
 
-        embed.fields.push({
+        embed.addFields({
             name: formatFieldName(key),
             value: `${value1} vs ${value2} ${comparisonResult}`,
             inline: true,
-        })
+        });
     }
 
-    return embed
+    return embed;
 }
-
 export default compareUsers

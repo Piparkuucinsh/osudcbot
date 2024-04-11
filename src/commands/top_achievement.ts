@@ -1,33 +1,14 @@
 import {
     SlashCommandBuilder,
     CommandInteraction,
-    UserSelectMenuBuilder,
-    RoleSelectMenuBuilder,
-    ActionRowBuilder,
-    ComponentType,
     EmbedBuilder,
 } from 'discord.js'
 
 import { CommandModule } from '@/types'
 import { v2 } from 'osu-api-extended'
 import { prisma } from '@/lib/prisma'
-
-interface Achievement {
-    beatmapId: bigint
-    beatmapName: string
-    username: string
-    playCount: number
-    rank: number
-    percentile: number
-    profilePicture: string
-}
-
-
-enum Demographic {
-    Users = 'users',
-    Roles = 'roles',
-    All = 'all',
-}
+import { Demographic, Achievement } from '@/models'
+import { collectUsers } from '@/func/collectUsers'
 
 const top_achievement: CommandModule = {
     data: new SlashCommandBuilder()
@@ -148,125 +129,6 @@ function getFilterBy(interaction: CommandInteraction): Demographic {
     return statistic
 }
 
-async function collectUsers(
-    filter_by: Demographic,
-    interaction: CommandInteraction
-): Promise<{ users: string[]; replied: boolean; raw_collect: string[] }> {
-    const users: string[] = []
-    const raw_collect: string[] = []
-    let replied = false
-    if (filter_by === Demographic.Users) {
-        const userSelect = new UserSelectMenuBuilder()
-            .setCustomId(interaction.id)
-            .setPlaceholder('Select users')
-            .setMinValues(1)
-            .setMaxValues(20)
-
-        const actionRow =
-            new ActionRowBuilder<UserSelectMenuBuilder>().setComponents(
-                userSelect
-            )
-
-        await interaction.reply({
-            components: [actionRow],
-            content: 'Select users',
-            ephemeral: true,
-        })
-        replied = true
-
-        return new Promise((resolve) => {
-            const collector =
-                interaction.channel!.createMessageComponentCollector({
-                    componentType: ComponentType.UserSelect,
-                    filter: (i) =>
-                        i.customId === interaction.id &&
-                        i.user.id === interaction.user.id,
-                    time: 60000,
-                })
-
-            collector.on('collect', async (i) => {
-                i.deferUpdate()
-                // Add collected user IDs to the users array
-                i.values.forEach((value) => {
-                    const userId = value
-                    if (!users.includes(userId)) {
-                        users.push(userId)
-                        raw_collect.push(userId)
-                    }
-                })
-
-                resolve({ users, replied, raw_collect })
-            })
-
-            collector.on('end', async () => {
-                // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied, raw_collect })
-            })
-        })
-    } else if (filter_by === Demographic.Roles) {
-        const roleSelect = new RoleSelectMenuBuilder()
-            .setCustomId(interaction.id)
-            .setPlaceholder('Select roles')
-            .setMinValues(1)
-            .setMaxValues(20)
-
-        const actionRow =
-            new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents(
-                roleSelect
-            )
-
-        await interaction.reply({
-            components: [actionRow],
-            content: 'Select roles',
-            ephemeral: true,
-        })
-
-        replied = true
-
-        return new Promise((resolve) => {
-            const collector =
-                interaction.channel!.createMessageComponentCollector({
-                    componentType: ComponentType.RoleSelect,
-                    filter: (i) =>
-                        i.customId === interaction.id &&
-                        i.user.id === interaction.user.id,
-                    time: 60000,
-                })
-
-            collector.on('collect', async (i) => {
-                // Add collected user IDs to the users array
-                i.deferUpdate()
-                const roleIds = i.values
-                for (const roleId of roleIds) {
-                    const role = await interaction.guild!.roles.fetch(roleId)
-                    if (role && role.members) {
-                        raw_collect.push(role.id)
-                        role.members.forEach((member) => {
-                            const userId = member.id
-                            if (!users.includes(userId)) {
-                                users.push(userId)
-                            }
-                        })
-                    }
-                }
-
-                resolve({ users, replied, raw_collect })
-            })
-
-            collector.on('end', async () => {
-                // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied, raw_collect })
-            })
-        })
-    } else if (filter_by === Demographic.All) {
-        const allUsers = await interaction.guild!.members.fetch()
-        allUsers.forEach((user) => {
-            users.push(user.id)
-        })
-    }
-    return { users, replied, raw_collect }
-}
-
 async function getTopAchievement(
     users: string[],
     days_limit: number
@@ -334,21 +196,18 @@ async function getTopAchievement(
 }
 
 function createAchievementEmbed(achievement: Achievement): EmbedBuilder {
-    // Field for the Beatmap
     const fieldBeatmap = {
         name: `Beatmap`,
         value: `${achievement.beatmapName} (ID: ${achievement.beatmapId.toString()})`,
         inline: true,
     }
 
-    // Field for the User who achieved it
     const fieldUser = {
         name: `Achieved by`,
         value: `${achievement.username}`,
         inline: true,
     }
 
-    // Field for the distinct number of players on the leaderboard
     const fieldPlayerCount = {
         name: `Distinct Players on Leaderboard`,
         value: `${achievement.playCount}`,
@@ -361,7 +220,6 @@ function createAchievementEmbed(achievement: Achievement): EmbedBuilder {
         inline: true,
     }
 
-    // Field for the Percentile Achieved
     const fieldPercentile = {
         name: `Percentile Achieved`,
         value: `${achievement.percentile.toFixed(2)}%`,
@@ -369,7 +227,7 @@ function createAchievementEmbed(achievement: Achievement): EmbedBuilder {
     }
 
     return new EmbedBuilder()
-        .setColor(3447003) // Color can be adjusted to fit the theme
+        .setColor(3447003)
         .setTitle(`🌟 Top Achievement of the Week 🌟`)
         .setDescription(
             `Celebrating an outstanding achievement in the community!`
@@ -382,8 +240,8 @@ function createAchievementEmbed(achievement: Achievement): EmbedBuilder {
             fieldPercentile
         )
         .setThumbnail(achievement.profilePicture)
-        .setTimestamp() // Optional, adds the current timestamp
-        .setFooter({ text: 'Congratulations!' }) // Customizable footer
+        .setTimestamp()
+        .setFooter({ text: 'Congratulations!' })
 }
 
 export default top_achievement

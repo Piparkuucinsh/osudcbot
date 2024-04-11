@@ -1,48 +1,13 @@
 import {
     SlashCommandBuilder,
     CommandInteraction,
-    UserSelectMenuBuilder,
-    RoleSelectMenuBuilder,
-    ActionRowBuilder,
-    ComponentType,
+    EmbedBuilder
 } from 'discord.js'
 import { CommandModule } from '@/types'
 import { prisma } from '@/lib/prisma'
-
-interface Stat {
-    username: string
-    last_updated: string
-    stat_value: number
-}
-
-type EmbedField = {
-    place: number
-    name: string
-    value: string
-    last_updated: string
-    inline: boolean
-    color: number
-}
-
-type Embed = {
-    color: number
-    title: string
-    description: string
-    fields: EmbedField[]
-    footer?: {
-        text: string
-    }
-}
-
-enum Demographic {
-    Users = 'users',
-    Roles = 'roles',
-    All = 'all',
-}
-
-type UserDB = {
-    osu_user_id: string // or string, depending on how osu_user_id is defined in your database schema
-}
+import { Stat, Demographic } from '@/models'
+import { User } from '@prisma/client'
+import { collectUsers } from '@/func/collectUsers'
 
 const leaderboard: CommandModule = {
     data: new SlashCommandBuilder()
@@ -211,15 +176,12 @@ async function collectLeaderboardStatistics(
     ) {
         order_by = 'asc'
     }
-    const users: UserDB[] = (await prisma.user.findMany({
+    const users: User[] = (await prisma.user.findMany({
         where: {
             discord_user_id: { in: discordUserIds },
             in_server: true,
-        },
-        select: {
-            osu_user_id: true,
-        },
-    })) as UserDB[]
+        }
+    }))
 
     // Filter out null osu_user_id
     const osuUserIds = users
@@ -233,9 +195,7 @@ async function collectLeaderboardStatistics(
         },
         take: limit,
         orderBy: { stat_value: order_by },
-        include: {
-            User: true,
-        },
+        include: { User: true },
     })
 
     leaderboardStats.forEach((stat) => {
@@ -260,148 +220,28 @@ function embedLeaderStatistics(
     stat_name: string,
     limit: number,
     last_updated: boolean = false
-): Embed {
-    const titleStatistic = formatFieldName(stat_name)
+): EmbedBuilder {
+    const titleStatistic = formatFieldName(stat_name);
 
-    const embed: Embed = {
-        color: 3447003, // Consider changing this based on the context
-        title: `Top ${limit} Leaderboard - ${titleStatistic}`,
-        description: `Showing the top ${limit} users ranked by ${titleStatistic}.`,
-        fields: statistics.map((stat, index) => ({
+    const embed = new EmbedBuilder()
+        .setColor(3447003)
+        .setTitle(`Top ${limit} Leaderboard - ${titleStatistic}`)
+        .setDescription(`Showing the top ${limit} users ranked by ${titleStatistic}`)
+        .setFooter({ text: `Leaderboard last updated on ${new Date().toLocaleDateString()}` });
+
+    statistics.slice(0, limit).forEach((stat, index) => {
+        let fieldValue = `Value: ${stat.stat_value}`;
+        if (last_updated) {
+            fieldValue += `\nLast Updated: ${stat.last_updated}`;
+        }
+        embed.addFields({
             name: `#${index + 1} - ${stat.username}`,
-            value: `Value: ${stat.stat_value}`,
-            last_updated: stat.last_updated,
+            value: fieldValue,
             inline: false,
-        })) as EmbedField[],
-        footer: {
-            text: `Leaderboard last updated on ${new Date().toLocaleDateString()}`,
-        },
-        // Optional: Add author or thumbnail if relevant
-    }
+        });
+    });
 
-    if (last_updated) {
-        embed.fields.forEach((field) => {
-            field.value += `\nLast Updated: ${field.last_updated}`
-        })
-    }
-
-    return embed
-}
-
-async function collectUsers(
-    filter_by: Demographic,
-    interaction: CommandInteraction
-): Promise<{ users: string[]; replied: boolean }> {
-    const users: string[] = []
-    let replied = false
-    if (filter_by === Demographic.Users) {
-        const userSelect = new UserSelectMenuBuilder()
-            .setCustomId(interaction.id)
-            .setPlaceholder('Select users')
-            .setMinValues(1)
-            .setMaxValues(20)
-
-        const actionRow =
-            new ActionRowBuilder<UserSelectMenuBuilder>().setComponents(
-                userSelect
-            )
-
-        await interaction.reply({
-            components: [actionRow],
-            content: 'Select users',
-            ephemeral: true,
-        })
-        replied = true
-
-        return new Promise((resolve) => {
-            const collector =
-                interaction.channel!.createMessageComponentCollector({
-                    componentType: ComponentType.UserSelect,
-                    filter: (i) =>
-                        i.customId === interaction.id &&
-                        i.user.id === interaction.user.id,
-                    time: 60000,
-                })
-
-            collector.on('collect', async (i) => {
-                i.deferUpdate()
-                // Add collected user IDs to the users array
-                i.values.forEach((value) => {
-                    const userId = value
-                    if (!users.includes(userId)) {
-                        users.push(userId)
-                    }
-                })
-
-                resolve({ users, replied })
-            })
-
-            collector.on('end', async () => {
-                // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied })
-            })
-        })
-    } else if (filter_by === Demographic.Roles) {
-        const roleSelect = new RoleSelectMenuBuilder()
-            .setCustomId(interaction.id)
-            .setPlaceholder('Select roles')
-            .setMinValues(1)
-            .setMaxValues(20)
-
-        const actionRow =
-            new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents(
-                roleSelect
-            )
-
-        await interaction.reply({
-            components: [actionRow],
-            content: 'Select roles',
-            ephemeral: true,
-        })
-
-        replied = true
-
-        return new Promise((resolve) => {
-            const collector =
-                interaction.channel!.createMessageComponentCollector({
-                    componentType: ComponentType.RoleSelect,
-                    filter: (i) =>
-                        i.customId === interaction.id &&
-                        i.user.id === interaction.user.id,
-                    time: 60000,
-                })
-
-            collector.on('collect', async (i) => {
-                // Add collected user IDs to the users array
-                i.deferUpdate()
-                const roleIds = i.values
-                for (const roleId of roleIds) {
-                    const role = await interaction.guild!.roles.fetch(roleId)
-                    if (role && role.members) {
-                        role.members.forEach((member) => {
-                            const userId = member.id
-                            if (!users.includes(userId)) {
-                                users.push(userId)
-                            }
-                        })
-                    }
-                }
-
-                resolve({ users, replied })
-            })
-
-            collector.on('end', async () => {
-                // Resolve the promise with the collected users when the collector ends
-                resolve({ users, replied })
-            })
-        })
-    } else if (filter_by === Demographic.All) {
-        const allUsers = await interaction.guild!.members.fetch()
-        allUsers.forEach((user) => {
-            users.push(user.id)
-        })
-    }
-    return { users, replied }
+    return embed;
 }
 
 export default leaderboard

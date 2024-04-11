@@ -1,39 +1,7 @@
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import { SlashCommandBuilder, CommandInteraction, EmbedBuilder } from 'discord.js'
 import { CommandModule } from '@/types'
 import { prisma } from '@/lib/prisma'
-
-interface StatisticalProperties {
-    pp_score?: number
-    accuracy?: number
-    play_count?: number
-    total_score?: number
-    ranked_score?: number
-    level?: number
-    global_rank?: number
-    country_rank?: number
-    highest_rank?: number
-}
-
-interface UserStatistics {
-    username: string
-    lastActivity?: string
-    stats: StatisticalProperties
-}
-
-type EmbedField = {
-    name: string
-    value: string
-    inline: boolean
-}
-
-type Embed = {
-    color: number
-    title: string
-    fields: EmbedField[]
-    footer?: {
-        text: string
-    }
-}
+import { UserStatistics, StatisticalProperties } from '@/models'
 
 const viewUser: CommandModule = {
     data: new SlashCommandBuilder()
@@ -136,27 +104,24 @@ function formatFieldName(fieldName: string): string {
     return fieldName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
-function embedStatistics(statistics: UserStatistics): Embed {
-    const embed: Embed = {
-        color: 10181046,
-        title: `Statistics for ${statistics.username}`,
-        fields: [],
-        footer: {
-            text: `Last Activity: ${statistics.lastActivity || 'Unknown'}`,
-        },
-    }
+function embedStatistics(statistics: UserStatistics): EmbedBuilder {
+    const embed = new EmbedBuilder()
+        .setColor(10181046) // Setting the color
+        .setTitle(`Statistics for ${statistics.username}`) // Setting the title
+        .setFooter({ text: `Last Activity: ${statistics.lastActivity || 'Unknown'}` }); // Setting the footer
 
+    // Iterating over the statistics object and adding fields
     for (const [key, value] of Object.entries(statistics.stats)) {
         if (value !== undefined) {
-            embed.fields.push({
+            embed.addFields({
                 name: formatFieldName(key),
                 value: value.toString(), // Convert numerical value to string
                 inline: true,
-            })
+            });
         }
     }
 
-    return embed
+    return embed;
 }
 
 export default viewUser
