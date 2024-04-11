@@ -2,14 +2,16 @@ import { guild } from '..'
 import { config } from '@/config'
 
 // Function to get the corresponding role ID based on rank.
-export const getRoleIdWithRank = (rank: number): string => {
+export const getRoleIdWithRank = (rank: number): string | null => {
     if (rank > config.roles.rank_roles[0].threshold)
         return config.roles.outside_range.id
+
+    if (rank < 0) return null
 
     const role = config.roles.rank_roles.find(
         ({ threshold }) => rank <= threshold
     )
-    return role ? role.id : ''
+    return role ? role.id : null
 }
 
 export const getCurrentRoleIds = async (
