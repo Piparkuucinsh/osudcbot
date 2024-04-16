@@ -68,3 +68,5 @@ describe('getRoleIdWithRank', () => {
         expect(roleId).toBe(null)
     })
 })
+
+describe('link user and add to database')

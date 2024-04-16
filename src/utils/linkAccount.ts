@@ -146,7 +146,7 @@ function extractStats(
             name: 'level',
             value:
                 osuUser.statistics.level &&
-                    osuUser.statistics.level.current !== undefined
+                osuUser.statistics.level.current !== undefined
                     ? osuUser.statistics.level.current
                     : null,
         },
