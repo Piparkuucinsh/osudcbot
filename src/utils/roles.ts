@@ -3,7 +3,8 @@ import { config } from '@/config'
 
 // Function to get the corresponding role ID based on rank.
 export const getRoleIdWithRank = (rank: number): string => {
-    if (rank > config.roles.rank_roles[0].threshold)
+    const lastRankRole = config.roles.rank_roles[config.roles.rank_roles.length - 1];
+    if (rank > lastRankRole.threshold)
         return config.roles.outside_range.id
 
     const role = config.roles.rank_roles.find(
