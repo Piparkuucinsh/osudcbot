@@ -4,10 +4,14 @@ import {
     SlashCommandBuilder,
 } from 'discord.js'
 
+type EventHandler<E extends keyof ClientEvents> = (
+    ...args: ClientEvents[E]
+) => Promise<void> | void
+
 export type EventModule<K extends keyof ClientEvents> = {
     name: K
     once: boolean
-    execute: (...args: ClientEvents[K]) => void
+    execute: EventHandler<K>
 }
 
 export type CommandModule = {

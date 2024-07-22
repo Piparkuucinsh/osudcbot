@@ -1,16 +1,21 @@
-import presenceUpdateEvent from '@/events/presenceUpdate'
-import ReadyEventModule from '@/events/onReady'
-import onMemberJoinEvent from '../events/onMemberJoin'
-import onMemberLeaveEvent from '../events/onMemberLeave'
-import { ClientEvents } from 'discord.js'
-import { EventModule } from '@/types'
+import presenceUpdateEvent from '@/events/presenceUpdate.ts'
+import ReadyEventModule from '@/events/onReady.ts'
+import onMemberJoinEvent from '../events/onMemberJoin.ts'
+import onMemberLeaveEvent from '../events/onMemberLeave.ts'
+// import type { ClientEvents } from 'discord.js'
+// import type { EventModule } from '@/types.d.ts'
 
 const getEventList = () => {
-    type AnyEventModule = {
-        [K in keyof ClientEvents]: EventModule<K>
-    }[keyof ClientEvents]
+    // type AnyEventModule = {
+    //     [K in keyof ClientEvents]: EventModule<K>
+    // }[keyof ClientEvents]
 
-    const events: AnyEventModule[] = [presenceUpdateEvent, ReadyEventModule, onMemberJoinEvent, onMemberLeaveEvent];
+    const events = [
+        presenceUpdateEvent,
+        ReadyEventModule,
+        onMemberJoinEvent,
+        onMemberLeaveEvent,
+    ]
 
     return events
 }

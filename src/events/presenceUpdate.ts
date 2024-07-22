@@ -1,7 +1,7 @@
 import { Events, Presence } from 'discord.js'
-import { config } from '@/config'
-import { EventModule } from '@/types'
-import { linkAccounts } from '@/utils/linkAccount'
+import { config } from '@/config.ts'
+import type { EventModule } from '@/types.d.ts'
+import { linkAccounts } from '@/utils/linkAccount.ts'
 
 const presenceUpdateEvent: EventModule<Events.PresenceUpdate> = {
     name: Events.PresenceUpdate,

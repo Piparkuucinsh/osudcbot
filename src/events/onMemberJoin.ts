@@ -1,6 +1,6 @@
 import { Events, GuildMember } from 'discord.js'
-import { EventModule } from '@/types'
-import { prisma } from '@/lib/prisma'
+import type { EventModule } from '@/types.d.ts'
+import { prisma } from '@/lib/prisma.ts'
 
 const onMemberJoinEvent: EventModule<Events.GuildMemberAdd> = {
     name: Events.GuildMemberAdd,

@@ -3,11 +3,12 @@
     "version": "1.0.0",
     "description": "A discord bot that links player's osu accounts to their discord accounts using discord rich presence and automatically assigns discord roles based on osu! country rank. It also automatically posts new user top scores and high leaderboard topscores every hour. It also has extra features such as minigames to award daily play and incentivize activity both in game and in the discord server.",
     "main": "dist/index.js",
+    "type": "module",
     "scripts": {
         "build": "tsc",
         "start": "cross-env TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "ts-node-dev -r tsconfig-paths/register src/index.ts",
+        "dev": "tsx src/index.ts",
         "lint": "eslint .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
@@ -21,25 +22,24 @@
     "author": "Piparkuucinsh",
     "license": "ISC",
     "devDependencies": {
-        "@types/node": "^20.11.24",
-        "@typescript-eslint/eslint-plugin": "^7.1.0",
-        "@typescript-eslint/parser": "^7.1.0",
+        "@eslint/js": "^9.7.0",
+        "@types/eslint__js": "^8.42.3",
+        "@types/node": "^20.14.11",
         "cross-env": "^7.0.3",
-        "eslint": "^8.57.0",
-        "eslint-import-resolver-typescript": "^3.6.1",
-        "eslint-plugin-import": "^2.29.1",
-        "prettier": "^3.2.5",
-        "prisma": "^5.10.2",
-        "ts-node": "^10.9.2",
-        "ts-node-dev": "^2.0.0",
-        "tsconfig-paths": "^4.2.0",
-        "typescript": "^5.3.3"
+        "eslint": "^9.7.0",
+        "globals": "^15.8.0",
+        "prettier": "^3.3.3",
+        "prisma": "^5.17.0",
+        "tsx": "^4.16.2",
+        "typescript": "^5.5.3",
+        "typescript-eslint": "^7.17.0"
     },
     "dependencies": {
-        "@prisma/client": "5.10.2",
-        "discord.js": "^14.14.1",
+        "@prisma/client": "5.17.0",
+        "discord.js": "^14.15.3",
         "dotenv": "^16.4.5",
-        "osu-api-extended": "^2.8.3"
+        "osu-api-extended": "^2.8.51",
+        "osu-api-v2-js": "^1.0.4"
     },
-    "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
+    "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e"
 }

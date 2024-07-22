@@ -1,7 +1,7 @@
-import { config } from '@/config'
+import { config } from '@/config.ts'
 import { REST, Routes } from 'discord.js'
 import 'dotenv/config'
-import getCommandList from '@/init/getCommandList'
+import getCommandList from '@/init/getCommandList.ts'
 
 const BOT_TOKEN = process.env.BOT_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID

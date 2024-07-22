@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { Roles } from '@/types'
+import type { Roles } from '@/types.d.ts'
 
 export type Config = {
     bot_channel_id: string

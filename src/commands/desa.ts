@@ -1,6 +1,6 @@
-import { config } from '@/config'
+import { config } from '@/config.ts'
 import { SlashCommandBuilder } from 'discord.js'
-import { CommandModule } from '@/types'
+import type { CommandModule } from '@/types.d.ts'
 
 const desa: CommandModule = {
     data: new SlashCommandBuilder().setName('desa').setDescription('desa'),

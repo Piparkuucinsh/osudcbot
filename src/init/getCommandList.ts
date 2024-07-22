@@ -1,14 +1,7 @@
-import { config } from '@/config'
-import { CommandModule } from '@/types'
+import { config } from '@/config.ts'
+import type { CommandModule } from '@/types.d.ts'
 
-import desa from '@/commands/desa'
-import updateUsers from '@/commands/update_users'
-import removeUsers from '@/commands/remove_users'
-import viewUser from '@/commands/view_user'
-import compareUsers from '@/commands/compare_users'
-import leaderboard from "@/commands/leaderboard";
-import popular_maps from "@/commands/popular_maps";
-import top_achievement from "@/commands/top_achievement";
+import desa from '@/commands/desa.ts'
 
 const getCommandList = () => {
     let commands: CommandModule[] = []
@@ -17,7 +10,7 @@ const getCommandList = () => {
         commands = [...commands, desa]
     }
 
-    commands = [...commands, updateUsers, removeUsers, viewUser, compareUsers, leaderboard, popular_maps, top_achievement]
+    // commands = [...commands]
 
     return commands
 }
