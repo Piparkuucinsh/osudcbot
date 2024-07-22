@@ -1,6 +1,6 @@
-import { config } from '@/config'
+import { config } from '@/config.ts'
 import { ChannelType, MessageCreateOptions, MessagePayload } from 'discord.js'
-import { client } from '@/index'
+import { client } from '@/index.ts'
 
 export const sendBotMessage = async (
     msg: string | MessagePayload | MessageCreateOptions

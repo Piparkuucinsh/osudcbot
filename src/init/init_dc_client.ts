@@ -5,10 +5,10 @@ import {
     Events,
     GatewayIntentBits,
 } from 'discord.js'
-import { CommandModule, EventModule } from '@/types'
+import type { CommandModule } from '@/types.d.ts'
 
-import getEventList from '@/init/getEventsList'
-import getCommandList from '@/init/getCommandList'
+import getEventList from '@/init/getEventsList.ts'
+import getCommandList from '@/init/getCommandList.ts'
 
 import 'dotenv/config'
 
@@ -28,22 +28,20 @@ export const init_dc_client = async () => {
 
     await discordClient.login(process.env.BOT_TOKEN)
 
-    const events = getEventList();
+    const events = getEventList()
 
     // add event listeners
     try {
-        for (const event of events as EventModule<keyof ClientEvents>[]) {
+        for (const event of events) {
             if (event.once) {
-                discordClient.once(
-                    event.name,
-                    (...args: ClientEvents[typeof event.name]) =>
-                        event.execute(...args)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                discordClient.once(event.name, (...args: any[]) =>
+                    event.execute(...args)
                 )
             } else {
-                discordClient.on(
-                    event.name,
-                    (...args: ClientEvents[typeof event.name]) =>
-                        event.execute(...args)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                discordClient.on(event.name, (...args: any[]) =>
+                    event.execute(...args)
                 )
             }
         }

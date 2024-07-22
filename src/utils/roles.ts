@@ -1,5 +1,5 @@
-import { guild } from '..'
-import { config } from '@/config'
+import { guild } from '../index.ts'
+import { config } from '@/config.ts'
 
 // Function to get the corresponding role ID based on rank.
 export const getRoleIdWithRank = (rank: number): string => {

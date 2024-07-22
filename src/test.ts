@@ -1,5 +1,5 @@
 import { auth } from 'osu-api-extended'
-import { v2 } from '../node_modules/osu-api-extended/dist/index'
+import { v2 } from '../node_modules/osu-api-extended/dist/index.ts'
 import 'dotenv/config'
 
 const CLIENT_ID = process.env.OSU_CLIENT_ID

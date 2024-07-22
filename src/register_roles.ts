@@ -1,6 +1,6 @@
 import { REST, Routes, Role } from 'discord.js'
 import fs from 'fs'
-import { config } from './config'
+import { config } from './config.ts'
 import 'dotenv/config'
 
 const BOT_TOKEN = process.env.BOT_TOKEN

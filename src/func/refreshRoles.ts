@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma'
-import { getCurrentRoleIds, getRoleIdWithRank } from '@/utils/roles'
+import { prisma } from '@/lib/prisma.ts'
+import { getCurrentRoleIds, getRoleIdWithRank } from '@/utils/roles.ts'
 import { v2 } from 'osu-api-extended'
 
 export const refreshRoles = async () => {

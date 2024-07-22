@@ -1,6 +1,6 @@
 import { Events, GuildMember, PartialGuildMember } from 'discord.js'
-import { EventModule } from '@/types'
-import { prisma } from '@/lib/prisma'
+import type { EventModule } from '@/types.d.ts'
+import { prisma } from '@/lib/prisma.ts'
 
 const onMemberLeaveEvent: EventModule<Events.GuildMemberRemove> = {
     name: Events.GuildMemberRemove,

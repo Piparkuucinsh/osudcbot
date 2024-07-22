@@ -1,8 +1,8 @@
 import { v2 as osuApi } from 'osu-api-extended'
-import { prisma } from '@/lib/prisma'
-import { sendBotMessage } from '@/utils/sendBotMessage'
+import { prisma } from '@/lib/prisma.ts'
+import { sendBotMessage } from '@/utils/sendBotMessage.ts'
 import { Activity, GuildMember, Presence } from 'discord.js'
-import { response } from 'osu-api-extended/dist/types/v2_user_details'
+import { response } from 'osu-api-extended/dist/types/v2_user_details.ts'
 
 const OSU_APP_ID = '367827983903490050'
 
