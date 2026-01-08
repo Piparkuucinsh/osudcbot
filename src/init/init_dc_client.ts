@@ -6,6 +6,7 @@ import {
     GatewayIntentBits,
 } from 'discord.js'
 import { CommandModule, EventModule } from '@/types'
+import { info, error } from '@/lib/log'
 
 import getEventList from '@/init/getEventsList'
 import getCommandList from '@/init/getCommandList'
@@ -28,7 +29,7 @@ export const init_dc_client = async () => {
 
     await discordClient.login(process.env.BOT_TOKEN)
 
-    const events = getEventList();
+    const events = getEventList()
 
     // add event listeners
     try {
@@ -47,9 +48,9 @@ export const init_dc_client = async () => {
                 )
             }
         }
-    } catch (error) {
-        console.error('Failed to set up Discord client events:')
-        throw error
+    } catch (err) {
+        error(`Failed to set up Discord client events: ${String(err)}`)
+        throw err
     }
 
     //register slash commands
@@ -65,17 +66,15 @@ export const init_dc_client = async () => {
         const command = discordClient.commands.get(interaction.commandName)
 
         if (!command) {
-            console.error(
-                `No command matching ${interaction.commandName} was found.`
-            )
+            error(`No command matching ${interaction.commandName} was found.`)
             return
         }
 
         try {
             await command.execute(interaction)
-            console.log(`Command '${interaction.commandName}' executed`)
-        } catch (error) {
-            console.error(error)
+            info(`Command '${interaction.commandName}' executed`)
+        } catch (err) {
+            error(String(err))
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({
                     content: 'There was an error while executing this command!',

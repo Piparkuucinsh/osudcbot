@@ -1,4 +1,81 @@
 {
-    "server_id": "",
-    "bot_channel_id": ""
+    "discord": {
+        "serverId": "",
+        "botChannelId": "",
+        "botSpamChannelId": "",
+        "notificationsChannelId": ""
+    },
+    "roles": {
+        "restricted": "",
+        "inactive": "",
+        "immigrant": "",
+        "pervert": "",
+        "admin": ""
+    },
+    "rankRoles": {
+        "LV1": {
+            "id": "",
+            "threshold": 1,
+            "userNewBestLimit": 100
+        },
+        "LV5": {
+            "id": "",
+            "threshold": 5,
+            "userNewBestLimit": 80
+        },
+        "LV10": {
+            "id": "",
+            "threshold": 10,
+            "userNewBestLimit": 60
+        },
+        "LV25": {
+            "id": "",
+            "threshold": 25,
+            "userNewBestLimit": 50
+        },
+        "LV50": {
+            "id": "",
+            "threshold": 50,
+            "userNewBestLimit": 30
+        },
+        "LV100": {
+            "id": "",
+            "threshold": 100,
+            "userNewBestLimit": 20
+        },
+        "LV250": {
+            "id": "",
+            "threshold": 250,
+            "userNewBestLimit": 15
+        },
+        "LV500": {
+            "id": "",
+            "threshold": 500,
+            "userNewBestLimit": 10
+        },
+        "LV1000": {
+            "id": "",
+            "threshold": 1000,
+            "userNewBestLimit": 5
+        },
+        "LVinf": {
+            "id": "",
+            "threshold": 99999,
+            "userNewBestLimit": 1
+        }
+    },
+    "rankEmojis": {
+        "XH": "<:SSplus:995050710406283354>",
+        "X": "<:SS:995050712784453747>",
+        "SH": "<:Splus:995050705926762517>",
+        "S": "<:S_:995050707835166761>",
+        "A": "<:A_:995050698221813770>",
+        "B": "<:B_:995050700147015761>",
+        "C": "<:C_:995050701879267378>",
+        "D": "<:D_:995050703372439633>"
+    },
+    "postRequest": {
+        "url": "",
+        "token": ""
+    }
 }

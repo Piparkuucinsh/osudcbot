@@ -2,7 +2,8 @@ import 'dotenv/config'
 import { init_dc_client } from '@/init/init_dc_client'
 import { osu_login } from '@/init/init_osu_client'
 import { Client, Guild } from 'discord.js'
-import { config } from './config'
+import { config } from '@/init/config'
+import { closeDb, initDb } from '@/lib/db'
 
 osu_login()
     .then()
@@ -11,11 +12,22 @@ osu_login()
     })
 export let client: Client
 export let guild: Guild
-init_dc_client()
-    .then(async (cl) => {
-        client = cl
-        guild = await client.guilds.fetch(config.bot_guild_id)
-    })
-    .catch((err) => {
-        throw err
-    })
+
+const boot = async () => {
+    await initDb()
+    const cl = await init_dc_client()
+    client = cl
+    guild = await client.guilds.fetch(config.discord.serverId)
+}
+
+void boot()
+
+process.on('SIGINT', async () => {
+    await closeDb()
+    process.exit(0)
+})
+
+process.on('SIGTERM', async () => {
+    await closeDb()
+    process.exit(0)
+})

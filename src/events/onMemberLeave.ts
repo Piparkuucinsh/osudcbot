@@ -1,20 +1,21 @@
 import { Events, GuildMember, PartialGuildMember } from 'discord.js'
 import { EventModule } from '@/types'
-import { prisma } from '@/lib/prisma'
+import { sendNotifications } from '@/services/discord'
+import { error } from '@/lib/log'
 
 const onMemberLeaveEvent: EventModule<Events.GuildMemberRemove> = {
     name: Events.GuildMemberRemove,
     once: false,
     execute: async (member: GuildMember | PartialGuildMember) => {
         try {
-            // member.displayName left the server
-            // maybe banned?
-            await prisma.user.update({
-                where: { discord_user_id: member.id },
-                data: { in_server: false },
-            })
+            await sendNotifications(
+                `**${member.displayName}** izgāja no servera!`
+            )
+            await sendNotifications(
+                'https://tenor.com/view/rip-bozo-gif-22294771'
+            )
         } catch (err) {
-            console.error(err)
+            error(String(err))
         }
     },
 }

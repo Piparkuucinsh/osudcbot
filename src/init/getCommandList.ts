@@ -1,24 +1,16 @@
-import { config } from '@/config'
 import { CommandModule } from '@/types'
-
 import desa from '@/commands/desa'
+import check from '@/commands/check'
+import pervert from '@/commands/pervert'
 import updateUsers from '@/commands/update_users'
-import removeUsers from '@/commands/remove_users'
-import viewUser from '@/commands/view_user'
-import compareUsers from '@/commands/compare_users'
-import leaderboard from "@/commands/leaderboard";
-import popular_maps from "@/commands/popular_maps";
-import top_achievement from "@/commands/top_achievement";
+import purgeRoles from '@/commands/purge_roles'
+import deleteMessages from '@/commands/delete'
 
 const getCommandList = () => {
     let commands: CommandModule[] = []
 
-    if (config.desa) {
-        commands = [...commands, desa]
-    }
-
-    commands = [...commands, updateUsers, removeUsers, viewUser, compareUsers, leaderboard, popular_maps, top_achievement]
-
+    commands = [desa, check, pervert, updateUsers, purgeRoles, deleteMessages]
+    // Additional commands are added in later implementation stages.
     return commands
 }
 

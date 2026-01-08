@@ -7,3 +7,12 @@ dist
 prisma/migrations
 .vscode
 notes.txt
+# Temp/runtime
+.bun/ 
+.bun-tmp
+node_modules/
+dist/
+*.log
+beatmaps/
+osu-token.json
+osulv-dc-bot/

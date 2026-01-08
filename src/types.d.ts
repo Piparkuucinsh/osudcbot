@@ -1,6 +1,6 @@
 import {
     ClientEvents,
-    CommandInteraction,
+    ChatInputCommandInteraction,
     SlashCommandBuilder,
 } from 'discord.js'
 
@@ -11,22 +11,8 @@ export type EventModule<K extends keyof ClientEvents> = {
 }
 
 export type CommandModule = {
-    data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
-    execute: (interaction: CommandInteraction) => Promise<void>
-}
-
-export interface Role {
-    id: string
-    name: string
-}
-
-export interface RankRole extends Role {
-    threshold: number
-}
-
-export type Roles = {
-    rank_roles: RankRole[]
-    restricted: Role
-    outside_country: Role
-    outside_range: Role
+    data:
+        | SlashCommandBuilder
+        | import('discord.js').SlashCommandOptionsOnlyBuilder
+    execute: (interaction: ChatInputCommandInteraction) => Promise<void>
 }

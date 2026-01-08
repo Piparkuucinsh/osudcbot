@@ -1,17 +1,18 @@
-import { config } from '@/config'
+import { config } from '@/init/config'
 import { REST, Routes } from 'discord.js'
 import 'dotenv/config'
 import getCommandList from '@/init/getCommandList'
+import { info, error } from '@/lib/log'
 
 const BOT_TOKEN = process.env.BOT_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
-const SERVER_ID = config.bot_guild_id
+const SERVER_ID = config.discord.serverId
 
 if (!BOT_TOKEN) {
     throw Error('no bot_token in env')
 }
 if (!CLIENT_ID) {
-    console.log(config)
+    info(JSON.stringify(config))
     throw Error('no client_id in env')
 }
 if (!SERVER_ID) {
@@ -20,7 +21,7 @@ if (!SERVER_ID) {
 
 const commands = getCommandList()
 const commandsJson = commands.map((command) => command.data.toJSON())
-console.log(commandsJson)
+info(JSON.stringify(commandsJson))
 
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(BOT_TOKEN)
@@ -28,7 +29,7 @@ const rest = new REST().setToken(BOT_TOKEN)
 // and deploy your commands!
 const deployCommands = async () => {
     try {
-        console.log(
+        info(
             `Started refreshing ${commandsJson.length} application (/) commands.`
         )
 
@@ -38,12 +39,12 @@ const deployCommands = async () => {
             { body: commandsJson }
         )
 
-        console.log(
+        info(
             `Successfully reloaded ${(data as { length: string }).length} application (/) commands.`
         )
-    } catch (error) {
+    } catch (err) {
         // And of course, make sure you catch and log any errors!
-        console.error(error)
+        error(String(err))
     }
 }
 

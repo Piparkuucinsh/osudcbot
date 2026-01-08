@@ -1,32 +1,27 @@
 import { Events, GuildMember } from 'discord.js'
 import { EventModule } from '@/types'
-import { prisma } from '@/lib/prisma'
+import { createPlayer, getPlayer } from '@/lib/db'
+import { sendNotifications } from '@/services/discord'
+import { error } from '@/lib/log'
 
 const onMemberJoinEvent: EventModule<Events.GuildMemberAdd> = {
     name: Events.GuildMemberAdd,
     once: false,
     execute: async (member: GuildMember) => {
         try {
-            const user = await prisma.user.findFirst({
-                where: { discord_user_id: member.id },
-            })
-            if (user) {
-                //send welcome message welcoming back
-                await prisma.user.update({
-                    where: { discord_user_id: member.id },
-                    data: { in_server: true },
-                })
+            const user = await getPlayer(member.id)
+            if (!user) {
+                await createPlayer(member.id)
+                await sendNotifications(
+                    `${member.toString()} pievienojās serverim!`
+                )
             } else {
-                //send welcome message
-                await prisma.user.create({
-                    data: {
-                        discord_user_id: member.id,
-                        in_server: true,
-                    },
-                })
+                await sendNotifications(
+                    `${member.toString()} atkal pievienojās serverim!`
+                )
             }
         } catch (err) {
-            console.error(err)
+            error(String(err))
         }
     },
 }
