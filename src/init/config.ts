@@ -35,7 +35,24 @@ const configSchema = z.object({
 		.default({}),
 });
 
-const configFileContent = readFileSync("config.json", "utf8");
+const CONFIG_PATH = "config.json";
+
+const configFileContent = (() => {
+	try {
+		return readFileSync(CONFIG_PATH, "utf8");
+	} catch (err) {
+		const e = err as NodeJS.ErrnoException;
+		if (e?.code === "ENOENT") {
+			throw new Error(
+				`Config file not found: ${CONFIG_PATH}. Create it (for example: copy config_example.json to config.json).`,
+			);
+		}
+
+		throw new Error(
+			`Error reading config file: ${CONFIG_PATH}.${e?.message ? ` ${e.message}` : ""}`,
+		);
+	}
+})();
 
 const parsed = (() => {
 	try {
