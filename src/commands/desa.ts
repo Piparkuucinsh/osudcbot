@@ -1,11 +1,11 @@
-import { SlashCommandBuilder } from 'discord.js'
-import { CommandModule } from '@/types'
+import { SlashCommandBuilder } from "discord.js";
+import type { CommandModule } from "@/types";
 
 const desa: CommandModule = {
-    data: new SlashCommandBuilder().setName('desa').setDescription('desa'),
-    execute: async (interaction) => {
-        await interaction.reply('<:desa:272418900111785985>')
-    },
-}
+	data: new SlashCommandBuilder().setName("desa").setDescription("desa"),
+	execute: async (interaction) => {
+		await interaction.reply("<:desa:272418900111785985>");
+	},
+};
 
-export default desa
+export default desa;

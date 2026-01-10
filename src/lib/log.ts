@@ -1,15 +1,15 @@
-import { logWarning } from '@/lib/discordLogHandler'
+import { logWarning } from "@/lib/discordLogHandler";
 
 export const info = (message: string): void => {
-    console.log(message)
-}
+	console.log(message);
+};
 
 export const warn = (message: string): void => {
-    console.warn(message)
-    logWarning(message)
-}
+	console.warn(message);
+	logWarning(message);
+};
 
 export const error = (message: string): void => {
-    console.error(message)
-    logWarning(message)
-}
+	console.error(message);
+	logWarning(message);
+};
