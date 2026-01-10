@@ -25,10 +25,4 @@
 6. Register commands:
     - `bun src/register_commands.ts`
 7. Run the bot:
-    - `bun --watch src/index.ts`
-
-## Notes
-
-- Beatmaps are cached in `beatmaps/` on demand for pp calculations.
-- Warnings and errors are forwarded to the bot channel.
-- The database uses a minimal `players` table (discord_id, osu_id, last_checked).
+    - `bun dev`
