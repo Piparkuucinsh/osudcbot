@@ -18,8 +18,8 @@ export const osu_login = async () => {
 	api.retry_delay = 2;
 	api.retry_on_timeout = true;
 	api.retry_on_status_codes = [429, 500, 502, 503, 504];
-	api.refresh_token_on_401 = true;
-	api.retry_on_automatic_token_refresh = true;
+	api.set_token_on_401 = true;
+	api.retry_on_new_token = true;
 	info("osu! client logged in");
 };
 
