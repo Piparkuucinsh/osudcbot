@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import { config } from "@/init/config";
+import { maybeReply } from "@/lib/dryRun";
 import { requireAdmin } from "@/lib/permissions";
 import type { CommandModule } from "@/types";
 
@@ -15,7 +16,7 @@ const check: CommandModule = {
 		),
 	execute: async (interaction) => {
 		if (!requireAdmin(interaction)) {
-			await interaction.reply({
+			await maybeReply(interaction, {
 				content: "You don't have permission to use this command.",
 				ephemeral: true,
 			});
@@ -23,7 +24,7 @@ const check: CommandModule = {
 		}
 
 		if (interaction.channelId !== config.discord.botChannelId) {
-			await interaction.reply({
+			await maybeReply(interaction, {
 				content: "This command can only be used in the bot channel.",
 				ephemeral: true,
 			});
@@ -31,7 +32,7 @@ const check: CommandModule = {
 		}
 
 		const message = interaction.options.getString("message", true);
-		await interaction.reply(message);
+		await maybeReply(interaction, message);
 	},
 };
 

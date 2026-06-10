@@ -1,5 +1,11 @@
 import { SlashCommandBuilder } from "discord.js";
 import { config } from "@/init/config";
+import {
+	maybeDeferReply,
+	maybeDeleteMessage,
+	maybeEditReply,
+	maybeReply,
+} from "@/lib/dryRun";
 import { requireAdmin } from "@/lib/permissions";
 import type { CommandModule } from "@/types";
 
@@ -15,7 +21,7 @@ const deleteMessages: CommandModule = {
 		),
 	execute: async (interaction) => {
 		if (!requireAdmin(interaction)) {
-			await interaction.reply({
+			await maybeReply(interaction, {
 				content: "You don't have permission to use this command.",
 				ephemeral: true,
 			});
@@ -26,7 +32,7 @@ const deleteMessages: CommandModule = {
 			config.discord.botSpamChannelId,
 		);
 		if (!channel || !("messages" in channel)) {
-			await interaction.reply({
+			await maybeReply(interaction, {
 				content: "Target channel not found.",
 				ephemeral: true,
 			});
@@ -34,22 +40,23 @@ const deleteMessages: CommandModule = {
 		}
 
 		const limit = interaction.options.getInteger("limit") ?? 20;
-		await interaction.deferReply();
+		await maybeDeferReply(interaction);
 
 		let deleted = 0;
 		const messages = await channel.messages.fetch({ limit });
 		for (const message of messages.values()) {
 			if (message.author.id === interaction.client.user?.id) {
 				try {
-					await message.delete();
-					deleted += 1;
+					if (await maybeDeleteMessage(message)) {
+						deleted += 1;
+					}
 				} catch {
 					// ignore delete errors
 				}
 			}
 		}
 
-		await interaction.editReply(`Deleted ${deleted} messages.`);
+		await maybeEditReply(interaction, `Deleted ${deleted} messages.`);
 	},
 };
 

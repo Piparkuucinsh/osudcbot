@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import getCommandList from "@/init/getCommandList";
 import getEventList from "@/init/getEventsList";
+import { maybeFollowUp, maybeReply } from "@/lib/dryRun";
 import { error, info } from "@/lib/log";
 import type { CommandModule, EventModule } from "@/types";
 
@@ -73,12 +74,12 @@ export const init_dc_client = async () => {
 		} catch (err) {
 			error(String(err));
 			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({
+				await maybeFollowUp(interaction, {
 					content: "There was an error while executing this command!",
 					ephemeral: true,
 				});
 			} else {
-				await interaction.reply({
+				await maybeReply(interaction, {
 					content: "There was an error while executing this command!",
 					ephemeral: true,
 				});

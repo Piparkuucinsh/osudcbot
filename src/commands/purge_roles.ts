@@ -1,5 +1,11 @@
 import { SlashCommandBuilder } from "discord.js";
 import { listLinkedPlayers } from "@/lib/db";
+import {
+	maybeDeferReply,
+	maybeEditReply,
+	maybeRemoveRole,
+	maybeReply,
+} from "@/lib/dryRun";
 import { requireAdmin } from "@/lib/permissions";
 import { getRankRoleIds } from "@/lib/roles";
 import type { CommandModule } from "@/types";
@@ -12,18 +18,18 @@ const purgeRoles: CommandModule = {
 		),
 	execute: async (interaction) => {
 		if (!requireAdmin(interaction)) {
-			await interaction.reply({
+			await maybeReply(interaction, {
 				content: "You don't have permission to use this command.",
 				ephemeral: true,
 			});
 			return;
 		}
 
-		await interaction.deferReply();
+		await maybeDeferReply(interaction);
 
 		const guild = interaction.guild;
 		if (!guild) {
-			await interaction.editReply("Error: Guild not found.");
+			await maybeEditReply(interaction, "Error: Guild not found.");
 			return;
 		}
 
@@ -40,12 +46,12 @@ const purgeRoles: CommandModule = {
 				rankRoleIds.has(role.id),
 			);
 			if (rolesToRemove.size > 0) {
-				await member.roles.remove(rolesToRemove);
+				await maybeRemoveRole(member, rolesToRemove, "/purge_roles command");
 				purged += 1;
 			}
 		}
 
-		await interaction.editReply(`Purged roles for ${purged} member(s).`);
+		await maybeEditReply(interaction, `Purged roles for ${purged} member(s).`);
 	},
 };
 

@@ -3,6 +3,7 @@ import { EmbedBuilder } from "discord.js";
 import { guild } from "@/index";
 import { config } from "@/init/config";
 import { listLinkedPlayers } from "@/lib/db";
+import { maybeAddRole, maybeRemoveRole } from "@/lib/dryRun";
 import { warn } from "@/lib/log";
 import { getRankRoleByRank, getRankRoleThreshold } from "@/lib/roles";
 import { getGuildMember, getRole, sendBotSpam } from "@/services/discord";
@@ -203,7 +204,7 @@ const removeCurrentRoles = async (
 		const roleId = config.rankRoles[currentRankKey].id;
 		const role = await getRole(roleId);
 		if (role) {
-			await member.roles.remove(role);
+			await maybeRemoveRole(member as GuildMember, role, "rank role refresh");
 		}
 	}
 
@@ -214,7 +215,7 @@ const removeCurrentRoles = async (
 				: config.roles.inactive;
 		const role = await getRole(roleId);
 		if (role) {
-			await member.roles.remove(role);
+			await maybeRemoveRole(member as GuildMember, role, "special role refresh");
 		}
 	}
 };
@@ -226,7 +227,7 @@ const addRankRole = async (
 	const roleId = config.rankRoles[rankKey].id;
 	const role = await getRole(roleId);
 	if (role) {
-		await member.roles.add(role);
+		await maybeAddRole(member as GuildMember, role, "rank role refresh");
 	}
 };
 
@@ -238,7 +239,7 @@ const addSpecialRole = async (
 		special === "restricted" ? config.roles.restricted : config.roles.inactive;
 	const role = await getRole(roleId);
 	if (role) {
-		await member.roles.add(role);
+		await maybeAddRole(member as GuildMember, role, "special role refresh");
 	}
 };
 
