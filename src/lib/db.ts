@@ -18,7 +18,11 @@ let pool: Pool | null = null;
 
 function buildDatabaseUrl(): string {
 	if (process.env.DATABASE_URL) {
-		return process.env.DATABASE_URL;
+		const url = new URL(process.env.DATABASE_URL);
+		if (url.searchParams.get("sslmode") === "require") {
+			url.searchParams.set("sslmode", "verify-full");
+		}
+		return url.toString();
 	}
 
 	const user = process.env.POSTGRES_USER;
@@ -67,9 +71,43 @@ const ensurePlayersTable = async (db: Pool): Promise<void> => {
 	const client = await db.connect();
 	try {
 		await client.query(CREATE_PLAYERS_TABLE);
+		await ensurePlayersDiscordIdUnique(client);
 		await verifyPlayersTable(client);
 	} finally {
 		client.release();
+	}
+};
+
+const ensurePlayersDiscordIdUnique = async (
+	client: PoolClient,
+): Promise<void> => {
+	const { rows } = await client.query<{ exists: boolean }>(
+		`
+		SELECT EXISTS (
+			SELECT 1
+			FROM pg_index i
+			JOIN pg_class t ON t.oid = i.indrelid
+			JOIN pg_namespace n ON n.oid = t.relnamespace
+			WHERE n.nspname = 'public'
+				AND t.relname = 'players'
+				AND i.indisunique
+				AND pg_get_indexdef(i.indexrelid) LIKE '%(discord_id)%'
+		) AS exists;
+		`,
+	);
+
+	if (rows[0]?.exists) return;
+
+	try {
+		await client.query(
+			"CREATE UNIQUE INDEX players_discord_id_unique_idx ON players (discord_id)",
+		);
+	} catch (error) {
+		throw new Error(
+			`players.discord_id needs a unique index for ON CONFLICT support, but creating it failed. Check for duplicate discord_id values in players. Cause: ${String(
+				error,
+			)}`,
+		);
 	}
 };
 
