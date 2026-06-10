@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: .
+    container_name: osudcbot
+    restart: unless-stopped
+    volumes:
+      - beatmaps:/usr/src/app/beatmaps
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - OSU_CLIENT_ID=${OSU_CLIENT_ID}
+      - OSU_CLIENT_SECRET=${OSU_CLIENT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+
+volumes:
+  beatmaps:
