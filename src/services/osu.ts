@@ -25,10 +25,13 @@ const withRetries = async <T>(
 	return null;
 };
 
-export const getOsuUserByUsername = async (username: string) => {
+export const getOsuUserByUsername = async (
+	username: string,
+	ruleset = osu.Ruleset.osu,
+) => {
 	const result = await withRetries(
-		() => getOsuApi().getUser(username),
-		`user.get(${username})`,
+		() => getOsuApi().getUser(username, ruleset),
+		`user.get(${username}, ruleset=${ruleset})`,
 	);
 	if (!result) {
 		warn(`osu api returned error for user.get(${username})`);
@@ -37,10 +40,13 @@ export const getOsuUserByUsername = async (username: string) => {
 	return result;
 };
 
-export const getOsuUserById = async (osuId: number) => {
+export const getOsuUserById = async (
+	osuId: number,
+	ruleset = osu.Ruleset.osu,
+) => {
 	const result = await withRetries(
-		() => getOsuApi().getUser(osuId),
-		`user.get(${osuId})`,
+		() => getOsuApi().getUser(osuId, ruleset),
+		`user.get(${osuId}, ruleset=${ruleset})`,
 	);
 	if (!result) {
 		warn(`osu api returned error for user.get(${osuId})`);
