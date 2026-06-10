@@ -146,11 +146,7 @@ const postUserBest = async (
 		.setColor(0x0084ff)
 		.setDescription(`**__Personal Best #${scoreRank}__**`)
 		.setAuthor({
-			name: `${osuUser.username}: ${(osuUser.statistics.pp ?? 0).toFixed(
-				2,
-			)}pp (#${osuUser.statistics.global_rank ?? "??"} ${osuUser.country_code}${
-				osuUser.statistics.country_rank ?? "??"
-			})`,
+			name: `${osuUser.username}: ${formatPP(osuUser.statistics.pp ?? 0)}pp (#${formatRank(osuUser.statistics.global_rank ?? 0)} ${osuUser.country_code}${formatRank(osuUser.statistics.country_rank ?? 0)})`,
 			url: `https://osu.ppy.sh/users/${osuUser.id}`,
 			iconURL: osuUser.avatar_url,
 		})
@@ -159,7 +155,7 @@ const postUserBest = async (
 		.setTitle(
 			`${score.beatmapset.artist} - ${score.beatmapset.title} [${
 				score.beatmap.version
-			}] [${perfMax.difficulty.stars.toFixed(2)}★]`,
+			}] [${formatStars(perfMax.difficulty.stars)}★]`,
 		)
 		.addFields({
 			name: `** ${rankEmoji}${modText}\t${totalScore.toLocaleString()}\t(${(
@@ -212,6 +208,22 @@ const formatTime = (seconds: number, clockRate: number): string => {
 const formatBpm = (bpm: number, clockRate: number): string => {
 	if (clockRate === 1) return `${bpm} BPM`;
 	return `${bpm} -> **${Math.round(bpm * clockRate)} BPM**`;
+};
+
+const formatPP = (value: number): string => {
+	return value.toLocaleString("en-US", {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 2,
+	});
+};
+
+const formatRank = (rank: number): string => {
+	return rank.toLocaleString("en-US");
+};
+
+const formatStars = (stars: number): string => {
+	const formatted = stars.toFixed(2);
+	return formatted.replace(/\.?0+$/, "");
 };
 
 const formatDuration = (totalSeconds: number): string => {
