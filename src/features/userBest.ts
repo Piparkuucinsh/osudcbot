@@ -4,7 +4,6 @@ import { EmbedBuilder } from "discord.js";
 import { Beatmap, BeatmapAttributesBuilder, Performance } from "rosu-pp-js";
 import { config } from "@/init/config";
 import { listLinkedPlayers, setLastChecked } from "@/lib/db";
-import { dryRunLog, isDryRun } from "@/lib/dryRun";
 import { warn } from "@/lib/log";
 import { getRankRoleKeyForMember } from "@/lib/roles";
 import { getGuildMember, sendBotSpam } from "@/services/discord";
@@ -183,11 +182,6 @@ const getBeatmap = async (beatmapId: number): Promise<Beatmap | null> => {
 		if (!resp.ok) {
 			warn(`failed to download beatmap ${beatmapId}: ${resp.status}`);
 			return null;
-		}
-		if (isDryRun) {
-			dryRunLog("fs.beatmap_cache.write", { path, beatmapId });
-			const bytes = new Uint8Array(await resp.arrayBuffer());
-			return new Beatmap(bytes);
 		}
 		mkdirSync(dir, { recursive: true });
 		const data = new Uint8Array(await resp.arrayBuffer());

@@ -1,5 +1,4 @@
 import { Pool, type PoolClient } from "pg";
-import { dryRunLog, isDryRun } from "@/lib/dryRun";
 
 const EXPECTED_COLUMNS: Record<string, string> = {
 	discord_id: "bigint",
@@ -67,13 +66,7 @@ export const closeDb = async (): Promise<void> => {
 const ensurePlayersTable = async (db: Pool): Promise<void> => {
 	const client = await db.connect();
 	try {
-		if (isDryRun) {
-			dryRunLog("db.schema.create_if_missing.skipped", {
-				sql: CREATE_PLAYERS_TABLE.trim(),
-			});
-		} else {
-			await client.query(CREATE_PLAYERS_TABLE);
-		}
+		await client.query(CREATE_PLAYERS_TABLE);
 		await verifyPlayersTable(client);
 	} finally {
 		client.release();
@@ -149,10 +142,6 @@ export const getPlayerByOsuId = async (
 };
 
 export const createPlayer = async (discordId: string): Promise<void> => {
-	if (isDryRun) {
-		dryRunLog("db.players.insert", { discordId });
-		return;
-	}
 	await getDb().query(
 		"INSERT INTO players (discord_id) VALUES ($1) ON CONFLICT (discord_id) DO NOTHING",
 		[discordId],
@@ -163,10 +152,6 @@ export const setPlayerOsuId = async (
 	discordId: string,
 	osuId: number,
 ): Promise<void> => {
-	if (isDryRun) {
-		dryRunLog("db.players.set_osu_id", { discordId, osuId });
-		return;
-	}
 	await getDb().query("UPDATE players SET osu_id = $1 WHERE discord_id = $2", [
 		osuId,
 		discordId,
@@ -174,10 +159,6 @@ export const setPlayerOsuId = async (
 };
 
 export const clearPlayerOsuId = async (discordId: string): Promise<void> => {
-	if (isDryRun) {
-		dryRunLog("db.players.clear_osu_id", { discordId });
-		return;
-	}
 	await getDb().query(
 		"UPDATE players SET osu_id = NULL WHERE discord_id = $1",
 		[discordId],
@@ -201,10 +182,6 @@ export const setLastChecked = async (
 	discordId: string,
 	value: string,
 ): Promise<void> => {
-	if (isDryRun) {
-		dryRunLog("db.players.set_last_checked", { discordId, value });
-		return;
-	}
 	await getDb().query(
 		"UPDATE players SET last_checked = $1 WHERE discord_id = $2",
 		[value, discordId],

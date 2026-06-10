@@ -2,7 +2,6 @@ import { REST, Routes } from "discord.js";
 import { config } from "@/init/config";
 import "dotenv/config";
 import getCommandList from "@/init/getCommandList";
-import { dryRunLog, isDryRun } from "@/lib/dryRun";
 import { error, info } from "@/lib/log";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -33,15 +32,6 @@ const deployCommands = async () => {
 		info(`Started refreshing ${commandsJson.length} application (/) commands.`);
 
 		// The put method is used to fully refresh all commands in the guild with the current set
-		if (isDryRun) {
-			dryRunLog("discord.application_commands.put", {
-				clientId: CLIENT_ID,
-				serverId: SERVER_ID,
-				commands: commandsJson,
-			});
-			return;
-		}
-
 		const data = await rest.put(
 			Routes.applicationGuildCommands(CLIENT_ID, SERVER_ID),
 			{ body: commandsJson },

@@ -7,7 +7,6 @@ import {
 	listLinkedPlayers,
 	setPlayerOsuId,
 } from "@/lib/db";
-import { dryRunLog, isDryRun, maybeAddRole } from "@/lib/dryRun";
 import { error, warn } from "@/lib/log";
 import { sendBotChannel } from "@/services/discord";
 import { getOsuUserByUsername } from "@/services/osu";
@@ -74,7 +73,7 @@ async function handleNonLatvianUser(member: GuildMember): Promise<void> {
 	if (!role) {
 		throw new Error(`Role ${roleId} not found in guild`);
 	}
-	await maybeAddRole(member, role, "non-Latvian osu! account detected");
+	await member.roles.add(role);
 	await sendBotChannel(
 		`Lietotājs ${member.toString()} nav no Latvijas! (Pievienots imigranta role)`,
 	);
@@ -135,11 +134,6 @@ async function postLinkedUsersIfConfigured(): Promise<void> {
 				osu_id: String(row.osu_id),
 			})),
 		};
-
-		if (isDryRun) {
-			dryRunLog("http.post_linked_users", { url, payload });
-			return;
-		}
 
 		const resp = await fetch(url, {
 			method: "POST",

@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import { config } from "@/init/config";
 import { createPlayer, listAllPlayers } from "@/lib/db";
-import { maybeDeferReply, maybeEditReply, maybeReply } from "@/lib/dryRun";
 import { requireAdmin } from "@/lib/permissions";
 import type { CommandModule } from "@/types";
 
@@ -11,7 +10,7 @@ const updateUsers: CommandModule = {
 		.setDescription("Update users in database (bot channel only)"),
 	execute: async (interaction) => {
 		if (!requireAdmin(interaction)) {
-			await maybeReply(interaction, {
+			await interaction.reply({
 				content: "You don't have permission to use this command.",
 				ephemeral: true,
 			});
@@ -19,18 +18,18 @@ const updateUsers: CommandModule = {
 		}
 
 		if (interaction.channelId !== config.discord.botChannelId) {
-			await maybeReply(interaction, {
+			await interaction.reply({
 				content: "This command can only be used in the bot channel.",
 				ephemeral: true,
 			});
 			return;
 		}
 
-		await maybeDeferReply(interaction);
+		await interaction.deferReply();
 
 		const guild = interaction.guild;
 		if (!guild) {
-			await maybeEditReply(interaction, "Error: Guild not found.");
+			await interaction.editReply("Error: Guild not found.");
 			return;
 		}
 
@@ -46,12 +45,9 @@ const updateUsers: CommandModule = {
 		}
 
 		if (added.length > 0) {
-			await maybeEditReply(
-				interaction,
-				`Pievienoja ${added.join(", ")} datubāzei.`,
-			);
+			await interaction.editReply(`Pievienoja ${added.join(", ")} datubāzei.`);
 		} else {
-			await maybeEditReply(interaction, "Nevienu nepievienoja datubāzei.");
+			await interaction.editReply("Nevienu nepievienoja datubāzei.");
 		}
 	},
 };
