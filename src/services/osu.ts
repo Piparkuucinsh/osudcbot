@@ -4,6 +4,19 @@ import { warn } from "@/lib/log";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const isNotFoundError = (error: unknown): boolean => {
+	const responseStatusCode = (error as { response?: { status_code?: number } })
+		.response?.status_code;
+	if (responseStatusCode === 404) {
+		return true;
+	}
+
+	if (error instanceof Error) {
+		return error.message.toLowerCase() === "not found";
+	}
+	return String(error).toLowerCase() === "error: not found";
+};
+
 const withRetries = async <T>(
 	fn: () => Promise<T>,
 	label: string,
@@ -16,12 +29,17 @@ const withRetries = async <T>(
 			return await fn();
 		} catch (error) {
 			lastError = error;
+			if (isNotFoundError(error)) {
+				break;
+			}
 			if (i < attempts - 1) {
 				await sleep(delayMs);
 			}
 		}
 	}
-	warn(`osu api error: ${label} failed: ${String(lastError)}`);
+	if (!isNotFoundError(lastError)) {
+		warn(`osu api error: ${label} failed: ${String(lastError)}`);
+	}
 	return null;
 };
 
@@ -34,7 +52,6 @@ export const getOsuUserByUsername = async (
 		`user.get(${username}, ruleset=${ruleset})`,
 	);
 	if (!result) {
-		warn(`osu api returned error for user.get(${username})`);
 		return null;
 	}
 	return result;
@@ -49,7 +66,6 @@ export const getOsuUserById = async (
 		`user.get(${osuId}, ruleset=${ruleset})`,
 	);
 	if (!result) {
-		warn(`osu api returned error for user.get(${osuId})`);
 		return null;
 	}
 	return result;
@@ -91,7 +107,6 @@ export const getUserBestScores = async (userId: number, limit: number) => {
 	);
 
 	if (!result) {
-		warn(`osu api returned error for user_best ${userId}`);
 		return null;
 	}
 
